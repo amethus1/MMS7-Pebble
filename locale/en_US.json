@@ -1,0 +1,8 @@
+{
+    "LOADING": "Loading...",
+    "UNKNOWN": "Unknown",
+    "DISCONNECTED": "Disconnected",
+    "CONNECTED": "Connected",
+    "STALE_DATA": "--",
+    "WEATHER_FETCH_ERROR": "Weather unavailable"
+}
