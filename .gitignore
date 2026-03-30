@@ -1,0 +1,25 @@
+# macOS / editor noise
+.DS_Store
+.claude/
+
+# Node dependencies
+node_modules/
+
+# Pebble / waf build output
+build/
+.lock-waf_*
+*.pbw
+*.map
+*.elf
+*.bin
+*.raw.bin
+*.pbpack
+*.resball
+*.o
+*.auto.c
+*.auto.h
+
+# Waf / tool caches and logs
+config.log
+.wafpickle-*
+c4che/
