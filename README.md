@@ -5,7 +5,15 @@ A highly configurable, information-rich Seven Segment watchface for Pebble Time,
 **Original watchface:** [Multifunctional 7 Segment (MSS7)](https://apps.rebble.io/en_US/application/5569c2084bebd0b90400000e) by FG — all credit for the design goes to the original.
 **Updated for the new watches by:** Henry Miller, a fan of the original, with AI assistance (I don't program — I just wanted the face I love to work on Pebble Time 2 and Round 2).
 
-![Watchface Preview](https://assets.rebble.io/7d/5569c2084bebd0b90400000e/screenshot.png?80x80)
+![MSS Refreshed Banner](appstore/banner-720x320.png)
+
+## Screenshots
+
+| Pebble Time (Basalt) | Pebble 2 (Diorite) | Pebble Time Round (Chalk) |
+| :---: | :---: | :---: |
+| ![Basalt Day](appstore/screenshots/basalt/1-day.png) | ![Diorite Day](appstore/screenshots/diorite/1-day.png) | ![Chalk Day](appstore/screenshots/chalk/1-day.png) |
+| **Pebble Time 2 (Emery)** | **Pebble Round 2 (Gabbro)** | **Night / Health Mode** |
+| ![Emery Day](appstore/screenshots/emery/1-day.png) | ![Gabbro Day](appstore/screenshots/gabbro/1-day.png) | ![Basalt Night](appstore/screenshots/basalt/2-night-steps.png) |
 
 ## Overview
 
