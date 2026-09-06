@@ -12,10 +12,7 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
     bool weather_changed = weather_handle_app_message(iterator);
     bool settings_changed = settings_handle_app_message(iterator);
     
-    // Clear fetch error on successful receive
     if (weather_changed) {
-        AppState* state = state_get_ptr();
-        state->weather.fetch_error = false;
         events_set_flag(EVENT_WEATHER_DATA);
     }
     if (settings_changed) {

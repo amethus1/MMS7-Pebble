@@ -5,15 +5,15 @@
 #include "../formatting.h"
 #include "../../modules/colors.h"
 #include "../../modules/weather.h"
-#include "../../effect_layer.h"
-#include "../../effects.h"
 #include "../battery_style.h"
 #include "../layout.h"
 
 struct StatusLayer {
     Layer* root_layer;
     TextLayer* battery_layer;
-    EffectLayer* battery_fill_layer;
+#if defined(LAYOUT_LARGE_DISPLAY)
+    TextLayer* battery_time_layer;
+#endif
     TextLayer* connection_layer;
     TextLayer* sunrise_layer;
     TextLayer* sunset_layer;
@@ -33,6 +33,23 @@ struct StatusLayer {
     char health_buf[20];
 #endif
 };
+
+#if defined(LAYOUT_LARGE_DISPLAY)
+#define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_18_BOLD
+#define STATUS_BATTERY_TIME_FONT FONT_KEY_GOTHIC_14
+#define STATUS_SMALL_FONT FONT_KEY_GOTHIC_18
+// On Gabbro the timezone / health slot is in the bottom cap of the circle (~100px wide).
+#define STATUS_MEDIUM_FONT PBL_IF_ROUND_ELSE(FONT_KEY_GOTHIC_18, FONT_KEY_GOTHIC_24)
+#elif defined(PBL_ROUND)
+// The timezone / health slot sits in the bottom cap of the circle, ~65px wide.
+#define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_14
+#define STATUS_SMALL_FONT FONT_KEY_GOTHIC_14
+#define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_14
+#else
+#define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_14
+#define STATUS_SMALL_FONT FONT_KEY_GOTHIC_14
+#define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_18
+#endif
 
 #if defined(PBL_HEALTH)
 static void health_trend_update_proc(Layer* layer, GContext* ctx) {
@@ -103,26 +120,28 @@ StatusLayer* status_layer_create(GRect frame) {
     sl->batt_buf[0] = '\0';
     sl->batt_time_buf[0] = '\0';
 
-    sl->battery_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TEXT), FONT_KEY_GOTHIC_14, GTextAlignmentCenter, GColorWhite);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    sl->battery_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TEXT), STATUS_BATTERY_FONT, GTextAlignmentCenter, GColorWhite);
+    text_layer_set_text(sl->battery_layer, "100%");
+    sl->battery_time_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TIME), STATUS_BATTERY_TIME_FONT, GTextAlignmentCenter, GColorWhite);
+#else
+    sl->battery_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TEXT), STATUS_BATTERY_FONT, GTextAlignmentCenter, GColorWhite);
     text_layer_set_overflow_mode(sl->battery_layer, GTextOverflowModeWordWrap);
     text_layer_set_text(sl->battery_layer, "100%\n0:00 d");
-
-    sl->battery_fill_layer = effect_layer_create(layout_get_battery_fill_rect(0));
-    effect_layer_add_effect(sl->battery_fill_layer, effect_invert_color, (void*)0);
-
-    sl->connection_layer = create_text_layer(layout_get_rect(LAYOUT_CONNECTION), FONT_KEY_GOTHIC_14, GTextAlignmentCenter, GColorWhite);
-
-#if defined(PBL_ROUND)
-    sl->sunrise_layer = create_text_layer(layout_get_rect(LAYOUT_SUNRISE), FONT_KEY_GOTHIC_14, GTextAlignmentRight, GColorWhite);
-#else
-    sl->sunrise_layer = create_text_layer(layout_get_rect(LAYOUT_SUNRISE), FONT_KEY_GOTHIC_14, GTextAlignmentLeft, GColorWhite);
 #endif
 
-    sl->sunset_layer = create_text_layer(layout_get_rect(LAYOUT_SUNSET), FONT_KEY_GOTHIC_14, GTextAlignmentLeft, GColorWhite);
-    sl->timezone_layer = create_text_layer(layout_get_rect(LAYOUT_TIMEZONE), FONT_KEY_GOTHIC_18, GTextAlignmentLeft, GColorWhite);
+    sl->connection_layer = create_text_layer(layout_get_rect(LAYOUT_CONNECTION), STATUS_SMALL_FONT, GTextAlignmentCenter, GColorWhite);
+
+    sl->sunrise_layer = create_text_layer(layout_get_rect(LAYOUT_SUNRISE), STATUS_SMALL_FONT, GTextAlignmentLeft, GColorWhite);
+
+    sl->sunset_layer = create_text_layer(layout_get_rect(LAYOUT_SUNSET), STATUS_SMALL_FONT, GTextAlignmentLeft, GColorWhite);
+    sl->timezone_layer = create_text_layer(layout_get_rect(LAYOUT_TIMEZONE), STATUS_MEDIUM_FONT,
+                                           PBL_IF_ROUND_ELSE(GTextAlignmentCenter, GTextAlignmentLeft), GColorWhite);
     
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_layer));
-    layer_add_child(sl->root_layer, effect_layer_get_layer(sl->battery_fill_layer));
+#if defined(LAYOUT_LARGE_DISPLAY)
+    layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_time_layer));
+#endif
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->connection_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->sunrise_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->sunset_layer));
@@ -133,7 +152,7 @@ StatusLayer* status_layer_create(GRect frame) {
     bitmap_layer_set_alignment(sl->health_icon_layer, GAlignCenter);
     layer_add_child(sl->root_layer, bitmap_layer_get_layer(sl->health_icon_layer));
 
-    sl->health_text_layer = create_text_layer(layout_get_rect(LAYOUT_HEALTH_TEXT), FONT_KEY_GOTHIC_18, GTextAlignmentLeft, GColorWhite);
+    sl->health_text_layer = create_text_layer(layout_get_rect(LAYOUT_HEALTH_TEXT), STATUS_MEDIUM_FONT, GTextAlignmentLeft, GColorWhite);
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->health_text_layer));
 
     sl->health_icon_steps = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_HEALTH_STEPS);
@@ -148,8 +167,10 @@ StatusLayer* status_layer_create(GRect frame) {
 }
 
 void status_layer_destroy(StatusLayer* sl) {
-    effect_layer_destroy(sl->battery_fill_layer);
     text_layer_destroy(sl->battery_layer);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_destroy(sl->battery_time_layer);
+#endif
     text_layer_destroy(sl->connection_layer);
     text_layer_destroy(sl->sunrise_layer);
     text_layer_destroy(sl->sunset_layer);
@@ -189,23 +210,28 @@ void status_layer_update(StatusLayer* sl) {
         }
     }
     format_battery_duration_mode0(sl->batt_time_buf, sizeof(sl->batt_time_buf), battery_duration);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    if (state->battery.charge_state == 1) {
+        snprintf(sl->batt_buf, sizeof(sl->batt_buf), "*%d%%", state->battery.charge_percent);
+    } else {
+        snprintf(sl->batt_buf, sizeof(sl->batt_buf), "%d%%", state->battery.charge_percent);
+    }
+    text_layer_set_text(sl->battery_time_layer, sl->batt_time_buf);
+#else
     if (state->battery.charge_state == 1) {
         snprintf(sl->batt_buf, sizeof(sl->batt_buf), "*%d%%\n%s", state->battery.charge_percent, sl->batt_time_buf);
     } else {
         snprintf(sl->batt_buf, sizeof(sl->batt_buf), "%d%%\n%s", state->battery.charge_percent, sl->batt_time_buf);
     }
+#endif
     text_layer_set_text(sl->battery_layer, sl->batt_buf);
 
     BatteryPalette battery_palette;
     battery_style_get_palette(settings, state->battery.charge_percent, &battery_palette);
-    GlobalInverterColor = battery_palette.inverter_argb & 0b00111111;
-    GlobalBkgColor = battery_palette.background_argb & 0b00111111;
     text_layer_set_text_color(sl->battery_layer, battery_palette.text_color);
-
-    Layer* battery_fill = effect_layer_get_layer(sl->battery_fill_layer);
-    layer_set_frame(battery_fill, layout_get_battery_fill_rect((38 * state->battery.charge_percent) / 100));
-    layer_set_hidden(battery_fill, state->battery.charge_percent <= 0);
-    layer_mark_dirty(battery_fill);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_set_text_color(sl->battery_time_layer, battery_palette.text_color);
+#endif
     
     // Connection - hide if settings say so
     if (settings->HideBluetooth && state->connection.bluetooth_connected) {
@@ -321,6 +347,9 @@ void status_layer_update_colors(StatusLayer* sl) {
     BatteryPalette battery_palette;
     battery_style_get_palette(settings, state->battery.charge_percent, &battery_palette);
     text_layer_set_text_color(sl->battery_layer, battery_palette.text_color);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_set_text_color(sl->battery_time_layer, battery_palette.text_color);
+#endif
 #if defined(PBL_HEALTH)
     text_layer_set_text_color(sl->health_text_layer, scheme->steps);
 #endif

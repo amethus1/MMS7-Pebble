@@ -42,6 +42,26 @@ static void process_events();
 static void update_tick_timer_service();
 static void update_date_and_week(struct tm *t);
 
+static bool cw_layer_wanted(const GlobalSettings* settings) {
+    // With ShowWeekInDate the week is part of the date string instead.
+    return !settings->HideCW && !settings->ShowWeekInDate;
+}
+
+// On the round display the calendar week and the seconds share the slot
+// between the sunrise and sunset times, so the week yields while seconds show.
+static void apply_cw_visibility() {
+    bool visible = cw_layer_wanted(settings_get_instance());
+#if defined(PBL_ROUND)
+    visible = visible && !s_seconds_visible;
+#endif
+    if (s_date_layer) date_layer_set_cw_visible(s_date_layer, visible);
+}
+
+static void set_seconds_visible(bool show) {
+    if (s_time_layer) time_layer_set_show_seconds(s_time_layer, show);
+    apply_cw_visibility();
+}
+
 static const char* get_locale_code() {
     static const char* s_locale = NULL;
     if (!s_locale) {
@@ -144,18 +164,18 @@ static void update_tick_timer_service() {
         // Always show seconds
         units |= SECOND_UNIT;
         s_seconds_visible = true;
-        if (s_time_layer) time_layer_set_show_seconds(s_time_layer, true);
+        set_seconds_visible(true);
     } else if (settings->DisplaySeconds >= 2 && s_seconds_visible) {
         // Shake mode and seconds currently visible
         units |= SECOND_UNIT;
-        if (s_time_layer) time_layer_set_show_seconds(s_time_layer, true);
+        set_seconds_visible(true);
     } else if (settings->DisplaySeconds == 0) {
         // Off
         s_seconds_visible = false;
-        if (s_time_layer) time_layer_set_show_seconds(s_time_layer, false);
+        set_seconds_visible(false);
     } else {
         // Shake mode but currently hidden
-        if (s_time_layer) time_layer_set_show_seconds(s_time_layer, false);
+        set_seconds_visible(false);
     }
     
     tick_timer_service_subscribe(units, tick_handler);
@@ -169,8 +189,7 @@ static void tap_handler(AccelAxisType axis, int32_t direction) {
     
     s_seconds_visible = true;
     s_seconds_timeout_counter = 0;
-    
-    if (s_time_layer) time_layer_set_show_seconds(s_time_layer, true);
+    set_seconds_visible(true);
     
     // Subscribe to seconds
     tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
@@ -298,7 +317,7 @@ static void process_events() {
             s_seconds_timeout_counter++;
             if (s_seconds_timeout_counter > get_seconds_timeout()) {
                 s_seconds_visible = false;
-                time_layer_set_show_seconds(s_time_layer, false);
+                set_seconds_visible(false);
                 // Switch back to minute updates
                 tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
             }
@@ -373,17 +392,15 @@ static void update_date_and_week(struct tm *t) {
             : 0;
         snprintf(date_with_week, sizeof(date_with_week), "%.*s %s", (int)max_date_len, date_buffer, week_buffer);
         date_layer_update_text(s_date_layer, date_with_week);
-        date_layer_set_cw_visible(s_date_layer, false);
+        apply_cw_visibility();
     } else {
         static char date_buffer[BUFFER_SIZE_LARGE];
         strftime(date_buffer, sizeof(date_buffer), settings->date_format, t);
         date_layer_update_text(s_date_layer, date_buffer);
         if (show_week) {
             date_layer_update_cw(s_date_layer, week_buffer);
-            date_layer_set_cw_visible(s_date_layer, true);
-        } else {
-            date_layer_set_cw_visible(s_date_layer, false);
         }
+        apply_cw_visibility();
     }
 }
 

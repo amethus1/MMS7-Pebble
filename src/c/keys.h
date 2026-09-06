@@ -40,11 +40,7 @@
 #define KEY_SET_LABEL_INDEX_2  32
 #define KEY_SET_LABEL_INDEX_3  33
 #define KEY_SET_LABEL_INDEX_4  34
-#define KEY_SET_LABEL_INDEX_5  35 //is used
-#define KEY_SET_LABEL_INDEX_6  36
-#define KEY_SET_LABEL_INDEX_7  37
-#define KEY_SET_LABEL_INDEX_8  38 //is used
-  
+
 #define KEY_SUN_RISE_UNIX      40
 #define KEY_SUN_SET_UNIX       41
 #define KEY_HIDE_CW            43

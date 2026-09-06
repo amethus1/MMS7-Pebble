@@ -2,11 +2,17 @@
 #include <pebble.h>
 
 // ============================================================================
-// Dynamic Layout Engine
+// Platform Layout Engine
 // ============================================================================
-// Replaces hardcoded X_OFFSET/Y_OFFSET with runtime-calculated positions.
-// Uses a canonical 144x168 design grid, scaled to fit any screen with
-// proper safe-area handling for round displays.
+// Every platform has its own hand-tuned native table (144x168 rectangle,
+// 180x180 round, 200x228 Emery). Fonts and digit art do not scale, so a scaled
+// grid was never quite right on the other screens.
+
+// Emery and Gabbro have roughly twice the pixels of the classic screens; the
+// layers pick larger fonts and resources on them.
+#if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
+#define LAYOUT_LARGE_DISPLAY 1
+#endif
 
 // ----------------------------------------------------------------------------
 // Layout IDs for UI elements
@@ -15,6 +21,7 @@ typedef enum {
     LAYOUT_WEATHER_ICON_DAY,
     LAYOUT_WEATHER_ICON_MOON,
     LAYOUT_WEATHER_TEMP,
+    LAYOUT_WEATHER_TEMP_DEGREE,
     LAYOUT_WEATHER_LOCATION,
     LAYOUT_WEATHER_LAST_UPDATE,
     LAYOUT_WEATHER_STRING1,
@@ -22,7 +29,6 @@ typedef enum {
     LAYOUT_WEATHER_STRING3,
     LAYOUT_DATE,
     LAYOUT_CW,
-    LAYOUT_BATTERY_WIDGET,
     LAYOUT_BATTERY_TEXT,
     LAYOUT_BATTERY_TIME,
     LAYOUT_BATTERY_BOX,
@@ -38,7 +44,7 @@ typedef enum {
     LAYOUT_COUNT  // Must be last
 } LayoutId;
 
-// Time digit positions (fixed size, scaled position)
+// Time digit positions
 typedef enum {
     DIGIT_H1,  // Hours tens
     DIGIT_H2,  // Hours units
@@ -53,6 +59,7 @@ typedef enum {
 typedef enum {
     LINE_HEADER_Y,
     LINE_HEADER_SPLIT_X,
+    LINE_HEADER_SPLIT_TOP_Y,  // Where the header split line starts (0 unless something sits above the header)
     LINE_LEFT_X,
     LINE_RIGHT_X,
     LINE_WEATHER_Y,
@@ -69,17 +76,26 @@ typedef enum {
 // Initialize layout engine with screen bounds. Call once in main_window_load.
 void layout_init(GRect bounds);
 
-// Get scaled rectangle for a UI element
+// Get the platform-specific rectangle for a UI element
 GRect layout_get_rect(LayoutId id);
 
-// Get scaled rectangle for a time digit (fixed size, scaled position)
+// Get the platform-specific rectangle for a time digit
 GRect layout_get_time_digit_rect(TimeDigitId id);
 
-// Get scaled Y coordinate for separator lines
+// Get a platform-specific separator coordinate
 int16_t layout_get_line_coord(LineId id);
 
-// Get scaled battery fill rect (width is canonical 0-38, will be scaled)
-GRect layout_get_battery_fill_rect(int16_t fill_width_canonical);
+// Maximum native fill width that keeps the fill inside LAYOUT_BATTERY_BOX.
+#if defined(LAYOUT_LARGE_DISPLAY)
+#define LAYOUT_BATTERY_FILL_MAX_W 38
+#elif defined(PBL_ROUND)
+#define LAYOUT_BATTERY_FILL_MAX_W 35
+#else
+#define LAYOUT_BATTERY_FILL_MAX_W 28
+#endif
+
+// Get the battery fill rectangle. Width is 0..LAYOUT_BATTERY_FILL_MAX_W.
+GRect layout_get_battery_fill_rect(int16_t fill_width);
 
 // Get sun arrow points (sunrise/sunset indicators)
 GPoint layout_get_sunrise_arrow_top(void);

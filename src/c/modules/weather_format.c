@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-static int c_to_f_rounded(int temp_c) {
+int c_to_f_rounded(int temp_c) {
     if (temp_c >= 0) {
         return (temp_c * 9 + 2) / 5 + 32;
     }

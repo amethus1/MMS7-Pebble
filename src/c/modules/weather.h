@@ -22,5 +22,8 @@ bool weather_is_night();
 // Helper: Check if valid weather data exists
 bool weather_has_data();
 
+// Helper: Check that weather data exists and is fresh enough to present as current
+bool weather_has_current_data();
+
 // Helper: Get timezone string
 const char* weather_get_timezone();

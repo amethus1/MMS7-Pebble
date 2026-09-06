@@ -15,6 +15,15 @@ static void assert_equals(const char *name, const char *actual, const char *expe
     printf("FAIL %s: expected '%s' got '%s'\n", name, expected, actual);
 }
 
+static void assert_int_equals(const char *name, int actual, int expected) {
+    if (actual == expected) {
+        return;
+    }
+
+    s_failures++;
+    printf("FAIL %s: expected %d got %d\n", name, expected, actual);
+}
+
 int main(void) {
     char buffer[32];
 
@@ -44,6 +53,12 @@ int main(void) {
 
     weather_format_hi_lo(buffer, sizeof(buffer), -999, 10, false);
     assert_equals("hilo sentinel", buffer, "--/--");
+
+    assert_int_equals("c_to_f 0", c_to_f_rounded(0), 32);
+    assert_int_equals("c_to_f 20", c_to_f_rounded(20), 68);
+    assert_int_equals("c_to_f -1", c_to_f_rounded(-1), 30);
+    assert_int_equals("c_to_f -10", c_to_f_rounded(-10), 14);
+    assert_int_equals("c_to_f -40", c_to_f_rounded(-40), -40);
 
     if (s_failures == 0) {
         printf("ALL TESTS PASSED\n");

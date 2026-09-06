@@ -1,11 +1,11 @@
 #include "formatting.h"
+#include "../modules/weather_format.h"
 
 void format_temperature(char* buffer, size_t buf_size, int temp_c, bool is_metric) {
     if (is_metric) {
         snprintf(buffer, buf_size, "%d°", temp_c);
     } else {
-        int temp_f = (temp_c * 9 / 5) + 32;
-        snprintf(buffer, buf_size, "%d°", temp_f);
+        snprintf(buffer, buf_size, "%d°", c_to_f_rounded(temp_c));
     }
 }
 
@@ -54,6 +54,10 @@ void format_time_elapsed(char* buffer, size_t buf_size, time_t seconds) {
 void format_sun_time(char* buffer, size_t buf_size, time_t unix_time, int utc_offset_seconds, bool is_24h) {
     time_t localized_time = unix_time + utc_offset_seconds;
     struct tm* t = gmtime(&localized_time);
+    if (!t) {
+        snprintf(buffer, buf_size, "--:--");
+        return;
+    }
     if (is_24h) {
         strftime(buffer, buf_size, "%H:%M", t);
     } else {

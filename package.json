@@ -1,8 +1,5 @@
 {
-    "author": "fg",
-    "dependencies": {
-        "pebble-clay": "^1.0.0"
-    },
+    "author": "Henry Miller",
     "keywords": [],
     "name": "mss7",
     "scripts": {
@@ -16,7 +13,7 @@
             "configurable",
             "health"
         ],
-        "displayName": "MSS7",
+        "displayName": "MSS Refreshed",
         "enableMultiJS": true,
         "messageKeys": {
             "KEY_BTY_LAST_CHARGED": 13,
@@ -37,10 +34,6 @@
             "KEY_SET_LABEL_INDEX_2": 32,
             "KEY_SET_LABEL_INDEX_3": 33,
             "KEY_SET_LABEL_INDEX_4": 34,
-            "KEY_SET_LABEL_INDEX_5": 35,
-            "KEY_SET_LABEL_INDEX_6": 36,
-            "KEY_SET_LABEL_INDEX_7": 37,
-            "KEY_SET_LABEL_INDEX_8": 38,
             "KEY_SET_LIGHT_ON": 22,
             "KEY_SET_MOON_PHASE": 5,
             "KEY_SET_TZ_FORMAT": 27,
@@ -95,7 +88,9 @@
                     "targetPlatforms": [
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery",
+                        "gabbro"
                     ],
                     "type": "bitmap"
                 },
@@ -106,7 +101,9 @@
                     "targetPlatforms": [
                         "basalt",
                         "chalk",
-                        "diorite"
+                        "diorite",
+                        "emery",
+                        "gabbro"
                     ],
                     "type": "bitmap"
                 },
@@ -116,8 +113,26 @@
                     "type": "font"
                 },
                 {
+                    "file": "fonts/moon_phases.ttf",
+                    "name": "FONT_MOON_PHASES_SUBSET_34",
+                    "targetPlatforms": [
+                        "emery",
+                        "gabbro"
+                    ],
+                    "type": "font"
+                },
+                {
                     "file": "fonts/Climacons.ttf",
                     "name": "FONT_CLIMACONS_32",
+                    "type": "font"
+                },
+                {
+                    "file": "fonts/Climacons.ttf",
+                    "name": "FONT_CLIMACONS_44",
+                    "targetPlatforms": [
+                        "emery",
+                        "gabbro"
+                    ],
                     "type": "font"
                 }
             ]
@@ -126,12 +141,17 @@
         "targetPlatforms": [
             "basalt",
             "chalk",
-            "diorite"
+            "diorite",
+            "emery",
+            "gabbro"
         ],
         "uuid": "ec182d88-f5ea-4559-8640-86ffd1f74f66",
         "watchapp": {
             "watchface": true
         }
     },
-    "version": "16.1.0"
+    "version": "17.0.0",
+    "dependencies": {
+        "@rebble/clay": "^1.1.0"
+    }
 }

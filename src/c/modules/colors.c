@@ -35,7 +35,9 @@ void colors_init(void) {
   
   // 2: White on Black with Colors
   SCHEMES[2] = (ColorScheme){
-    .clock = GColorWhite, .seconds = GColorWhite, .timezone = GColorDarkGray,
+    // Dark gray on black is barely legible; the same slot shows steps in
+    // white, so match the neighbouring calendar week instead.
+    .clock = GColorWhite, .seconds = GColorWhite, .timezone = GColorLightGray,
     .steps = GColorWhite, .calendar_week = GColorLightGray, .clock_bg = GColorBlack,
     .date = GColorWhite, .date_bg = GColorBlack,
     .weather = GColorWhite, .weather_bg = GColorBlack,

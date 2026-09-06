@@ -15,6 +15,14 @@ typedef void* TextLayer;
 typedef void* DictionaryIterator;
 typedef void* AppMessageResult;
 
+// Tuple type tags matching Pebble SDK (AppMessage)
+typedef enum {
+    TUPLE_BYTE_ARRAY = 0,
+    TUPLE_CSTRING = 1,
+    TUPLE_UINT = 2,
+    TUPLE_INT = 3,
+} TupleType;
+
 // Tuple value union matching Pebble SDK
 typedef union {
     char* cstring;
@@ -24,6 +32,8 @@ typedef union {
 
 typedef struct {
     uint32_t key;
+    TupleType type;
+    uint16_t length;   // For TUPLE_CSTRING this includes the terminating NUL
     TupleValue* value;
 } Tuple;
 

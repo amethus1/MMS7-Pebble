@@ -12,6 +12,9 @@ struct WeatherLayer {
     Layer* root_layer;
     TextLayer* icon_layer;
     TextLayer* temp_layer;
+#if defined(LAYOUT_LARGE_DISPLAY)
+    TextLayer* temp_degree_layer;
+#endif
     TextLayer* location_layer;
     TextLayer* last_update_layer;
     TextLayer* string_1_layer;
@@ -32,6 +35,23 @@ struct WeatherLayer {
 // Custom font for weather icons
 static GFont s_weather_font = NULL;
 static GFont s_moon_font = NULL;
+
+// Emery and Gabbro have the room for larger fonts and icon glyphs.
+#if defined(LAYOUT_LARGE_DISPLAY)
+#define WEATHER_ICON_RESOURCE RESOURCE_ID_FONT_CLIMACONS_44
+#define WEATHER_MOON_RESOURCE RESOURCE_ID_FONT_MOON_PHASES_SUBSET_34
+#define WEATHER_TEMP_FONT FONT_KEY_BITHAM_34_MEDIUM_NUMBERS
+#define WEATHER_HEADER_FONT FONT_KEY_GOTHIC_18_BOLD
+#define WEATHER_UPDATE_FONT FONT_KEY_GOTHIC_18
+#define WEATHER_INFO_FONT FONT_KEY_GOTHIC_18
+#else
+#define WEATHER_ICON_RESOURCE RESOURCE_ID_FONT_CLIMACONS_32
+#define WEATHER_MOON_RESOURCE RESOURCE_ID_FONT_MOON_PHASES_SUBSET_24
+#define WEATHER_TEMP_FONT FONT_KEY_GOTHIC_28_BOLD
+#define WEATHER_HEADER_FONT FONT_KEY_GOTHIC_14_BOLD
+#define WEATHER_UPDATE_FONT FONT_KEY_GOTHIC_14
+#define WEATHER_INFO_FONT FONT_KEY_GOTHIC_14
+#endif
 
 static GColor temperature_color(int temp_c) {
 #if defined(PBL_COLOR)
@@ -69,7 +89,7 @@ static void format_weather_info_line(char *buffer, size_t size, int label_index,
             weather_format_wind(buffer, size, state->weather.wind_kmh, settings->SpeedUnit);
             break;
         case 3:
-            snprintf(buffer, size, "%d %%", state->weather.humidity_percent);
+            snprintf(buffer, size, "%d%%", state->weather.humidity_percent);
             break;
         case 4:
             weather_format_pressure(buffer, size, state->weather.pressure_hpa, settings->PressureUnit);
@@ -85,10 +105,10 @@ static void format_weather_info_line(char *buffer, size_t size, int label_index,
 
 WeatherLayer* weather_layer_create(GRect frame) {
     if (!s_weather_font) {
-        s_weather_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_CLIMACONS_32));
+        s_weather_font = fonts_load_custom_font(resource_get_handle(WEATHER_ICON_RESOURCE));
     }
     if (!s_moon_font) {
-        s_moon_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_MOON_PHASES_SUBSET_24));
+        s_moon_font = fonts_load_custom_font(resource_get_handle(WEATHER_MOON_RESOURCE));
     }
 
     WeatherLayer* wl = malloc(sizeof(WeatherLayer));
@@ -100,20 +120,33 @@ WeatherLayer* weather_layer_create(GRect frame) {
     text_layer_set_text_alignment(wl->icon_layer, GTextAlignmentCenter);
     text_layer_set_background_color(wl->icon_layer, GColorClear);
 
-    // Temperature (uses bold 28pt, can't use helper)
+    // Temperature (uses a platform-specific numeric font, can't use helper)
     wl->temp_layer = text_layer_create(layout_get_rect(LAYOUT_WEATHER_TEMP));
-    text_layer_set_font(wl->temp_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+    text_layer_set_font(wl->temp_layer, fonts_get_system_font(WEATHER_TEMP_FONT));
     text_layer_set_text_alignment(wl->temp_layer, GTextAlignmentRight);
     text_layer_set_background_color(wl->temp_layer, GColorClear);
 
-    wl->location_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_LOCATION), FONT_KEY_GOTHIC_14_BOLD, GTextAlignmentCenter, GColorWhite);
-    wl->last_update_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_LAST_UPDATE), FONT_KEY_GOTHIC_14, GTextAlignmentCenter, GColorWhite);
-    wl->string_1_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_STRING1), FONT_KEY_GOTHIC_14, GTextAlignmentRight, GColorWhite);
-    wl->string_2_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_STRING2), FONT_KEY_GOTHIC_14, GTextAlignmentRight, GColorWhite);
-    wl->string_3_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_STRING3), FONT_KEY_GOTHIC_14, GTextAlignmentCenter, GColorWhite);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    // Bitham's degree glyph sits too high and crowds the screen edge when it
+    // shares the numeric layer. Render it separately for stable spacing.
+    wl->temp_degree_layer = create_text_layer(
+        layout_get_rect(LAYOUT_WEATHER_TEMP_DEGREE),
+        FONT_KEY_GOTHIC_18_BOLD,
+        GTextAlignmentLeft,
+        GColorWhite);
+#endif
+
+    wl->location_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_LOCATION), WEATHER_HEADER_FONT, GTextAlignmentCenter, GColorWhite);
+    wl->last_update_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_LAST_UPDATE), WEATHER_UPDATE_FONT, GTextAlignmentCenter, GColorWhite);
+    wl->string_1_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_STRING1), WEATHER_INFO_FONT, GTextAlignmentRight, GColorWhite);
+    wl->string_2_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_STRING2), WEATHER_INFO_FONT, GTextAlignmentRight, GColorWhite);
+    wl->string_3_layer = create_text_layer(layout_get_rect(LAYOUT_WEATHER_STRING3), WEATHER_INFO_FONT, GTextAlignmentCenter, GColorWhite);
 
     layer_add_child(wl->root_layer, text_layer_get_layer(wl->icon_layer));
     layer_add_child(wl->root_layer, text_layer_get_layer(wl->temp_layer));
+#if defined(LAYOUT_LARGE_DISPLAY)
+    layer_add_child(wl->root_layer, text_layer_get_layer(wl->temp_degree_layer));
+#endif
     layer_add_child(wl->root_layer, text_layer_get_layer(wl->location_layer));
     layer_add_child(wl->root_layer, text_layer_get_layer(wl->last_update_layer));
     layer_add_child(wl->root_layer, text_layer_get_layer(wl->string_1_layer));
@@ -126,6 +159,9 @@ WeatherLayer* weather_layer_create(GRect frame) {
 void weather_layer_destroy(WeatherLayer* wl) {
     text_layer_destroy(wl->icon_layer);
     text_layer_destroy(wl->temp_layer);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_destroy(wl->temp_degree_layer);
+#endif
     text_layer_destroy(wl->location_layer);
     text_layer_destroy(wl->last_update_layer);
     text_layer_destroy(wl->string_1_layer);
@@ -154,9 +190,20 @@ void weather_layer_update_data(WeatherLayer* wl) {
     
     // Temperature - mask sentinel values
     if (state->weather.temp_c > -100 && state->weather.temp_c < 100) {
+#if defined(LAYOUT_LARGE_DISPLAY)
+        int display_temp = settings->degree_f
+            ? c_to_f_rounded(state->weather.temp_c)
+            : state->weather.temp_c;
+        snprintf(wl->temp_buffer, sizeof(wl->temp_buffer), "%d", display_temp);
+        text_layer_set_text(wl->temp_degree_layer, "°");
+#else
         format_temperature(wl->temp_buffer, sizeof(wl->temp_buffer), state->weather.temp_c, !settings->degree_f);
+#endif
     } else {
         snprintf(wl->temp_buffer, sizeof(wl->temp_buffer), "--");
+#if defined(LAYOUT_LARGE_DISPLAY)
+        text_layer_set_text(wl->temp_degree_layer, "");
+#endif
     }
     text_layer_set_text(wl->temp_layer, wl->temp_buffer);
     
@@ -176,10 +223,14 @@ void weather_layer_update_data(WeatherLayer* wl) {
         layer_set_frame(text_layer_get_layer(wl->icon_layer), layout_get_rect(LAYOUT_WEATHER_ICON_DAY));
         wl->icon_buffer[0] = ' ';
         wl->icon_buffer[1] = '\0';
-        if (state->weather.icon_id >= 33 && state->weather.icon_id <= 106) {
+        // Never present a cached condition icon as current once the data has
+        // gone stale. This prevents an old storm icon lingering for hours.
+        if (!weather_has_current_data()) {
+            wl->icon_buffer[0] = ' ';
+        } else if (state->weather.icon_id >= 33 && state->weather.icon_id <= 106) {
             wl->icon_buffer[0] = (char)state->weather.icon_id;
         } else {
-            wl->icon_buffer[0] = 'I'; // Default sun icon
+            wl->icon_buffer[0] = '!'; // Valid data with an unknown icon
         }
         text_layer_set_text(wl->icon_layer, wl->icon_buffer);
     }
@@ -217,7 +268,9 @@ void weather_layer_update_data(WeatherLayer* wl) {
 
     // Left row 1/2 are rendered together on one line to match the classic reference layout.
     if (wl->info_line_3[0] != '\0' && wl->info_line_4[0] != '\0') {
-        snprintf(wl->left_info_buffer, sizeof(wl->left_info_buffer), "%s / %s",
+        // No padding around the separator: "87%/1013 hPa" has to fit the 82px
+        // left cell on the 144px-wide platforms, where " / " overflowed it.
+        snprintf(wl->left_info_buffer, sizeof(wl->left_info_buffer), "%s/%s",
                  wl->info_line_3, wl->info_line_4);
     } else if (wl->info_line_3[0] != '\0') {
         snprintf(wl->left_info_buffer, sizeof(wl->left_info_buffer), "%s", wl->info_line_3);
@@ -241,6 +294,9 @@ void weather_layer_update_colors(WeatherLayer* wl) {
         temp_color = temperature_color(state->weather.temp_c);
     }
     text_layer_set_text_color(wl->temp_layer, temp_color);
+#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_set_text_color(wl->temp_degree_layer, temp_color);
+#endif
     
     // Icon color based on weather condition or moon
     if (show_moon) {

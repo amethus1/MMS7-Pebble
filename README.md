@@ -1,9 +1,9 @@
 # MSS Refreshed
 
-A highly configurable, information-rich Seven Segment watchface for Pebble Time, Pebble Time Round, and Pebble 2. Legacy `aplite` devices are no longer targeted.
+A highly configurable, information-rich Seven Segment watchface for Pebble Time, Pebble Time Round, Pebble 2, Pebble Time 2 and Pebble Round 2. Legacy `aplite` devices are no longer targeted.
 
-**Original Creator:** [SetPebble](https://apps.rebble.io/en_US/application/5569c2084bebd0b90400000e) (Attribution)
-**Refined & Updated by:** Henry Miller
+**Original watchface:** [Multifunctional 7 Segment (MSS7)](https://apps.rebble.io/en_US/application/5569c2084bebd0b90400000e) by FG — all credit for the design goes to the original.
+**Updated for the new watches by:** Henry Miller, a fan of the original, with AI assistance (I don't program — I just wanted the face I love to work on Pebble Time 2 and Round 2).
 
 ![Watchface Preview](https://assets.rebble.io/7d/5569c2084bebd0b90400000e/screenshot.png?80x80)
 
@@ -14,7 +14,7 @@ This project is a modernize and refactored version of the classic MSS watchface.
 ## New Features & Improvements
 
 ### 🔧 Modern Configuration (Clay)
-- **Built-in Settings:** No longer relies on external websites. All settings are built directly into the Pebble app using `pebble-clay`.
+- **Built-in Settings:** No longer relies on external websites. All settings are built directly into the Pebble app using `@rebble/clay` (the maintained fork of `pebble-clay`).
 - **Instant Updates:** Settings apply immediately upon save.
 
 ### 📅 Fiscal Week Support
@@ -48,6 +48,6 @@ pebble install
 
 ## Credits
 
-- Based on the original work by **SetPebble**.
-- Refactoring and new features by **Henry Miller**.
+- Based on **Multifunctional 7 Segment** by **FG** — the original design and the idea are theirs.
+- Updated for Pebble Time 2 / Round 2 and refreshed by **Henry Miller** with AI assistance.
 - Weather data provided by Open-Meteo.

@@ -1,4 +1,28 @@
 var s_fetch_in_flight = false;
+var s_fetch_watchdog = null;
+
+// Mark a fetch as started. A watchdog guarantees the in-flight flag is cleared
+// even if a callback never fires (e.g. geolocation that never resolves), so
+// weather updates can never get permanently wedged.
+function beginFetch() {
+    s_fetch_in_flight = true;
+    if (s_fetch_watchdog !== null) {
+        clearTimeout(s_fetch_watchdog);
+    }
+    s_fetch_watchdog = setTimeout(function () {
+        s_fetch_watchdog = null;
+        s_fetch_in_flight = false;
+    }, 60000);
+}
+
+// Mark a fetch as finished (success or failure). Idempotent.
+function endFetch() {
+    s_fetch_in_flight = false;
+    if (s_fetch_watchdog !== null) {
+        clearTimeout(s_fetch_watchdog);
+        s_fetch_watchdog = null;
+    }
+}
 
 function httpGetJson(url, onSuccess, onError) {
     var xhr = new XMLHttpRequest();
@@ -90,16 +114,28 @@ function getTimezoneDisplayName(timezoneName, unixTime, fallbackName) {
 }
 
 function getWeatherIcon(code, isDay) {
+    // Climacons ASCII map used by resources/fonts/Climacons.ttf:
+    // ! cloud, "/# cloud+sun/moon, $/%/& rain, '/(/) showers,
+    // */+/, downpour, -/./ drizzle, 0/1/2 sleet, 3/4/5 hail,
+    // 6/7/8 flurries, 9/:/; snow, </=/> fog, F/G/H lightning,
+    // I sun, N moon.
     if (code === 0) return isDay ? 'I' : 'N';
-    if (code === 1) return isDay ? '"' : '#';
-    if (code === 2) return isDay ? '"' : '#';
+    if (code === 1 || code === 2) return isDay ? '"' : '#';
     if (code === 3) return '!';
-    if (code === 45 || code === 48) return 'M';
-    if ((code >= 51 && code <= 57)) return "'";
-    if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return '$';
-    if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return '*';
-    if (code >= 95 && code <= 99) return isDay ? 'G' : 'F';
-    return 'I';
+    if (code === 45 || code === 48) return isDay ? '=' : '>';
+    if (code >= 51 && code <= 55) return isDay ? '.' : '/';
+    if (code === 56 || code === 57) return isDay ? '1' : '2';
+    if (code >= 61 && code <= 65) return isDay ? '%' : '&';
+    if (code === 66 || code === 67) return isDay ? '1' : '2';
+    if (code >= 71 && code <= 75) return isDay ? ':' : ';';
+    if (code === 77) return isDay ? '7' : '8';
+    if (code === 80 || code === 81) return isDay ? '(' : ')';
+    if (code === 82) return isDay ? '+' : ',';
+    if (code === 85) return isDay ? '7' : '8';
+    if (code === 86) return isDay ? ':' : ';';
+    if (code === 95) return isDay ? 'G' : 'H';
+    if (code === 96 || code === 99) return isDay ? '4' : '5';
+    return '!';
 }
 
 function getWeatherDescription(code) {
@@ -142,10 +178,13 @@ function firstOr(value, fallback) {
 }
 
 function buildWeatherPayload(json, location, keys, nowUnix) {
+    json = json || {};
+    location = location || {};
     var current = json.current || {};
     var daily = json.daily || {};
     var now = nowUnix || Math.floor(Date.now() / 1000);
-    var weatherCode = Number(current.weather_code || 0);
+    var hasWeatherCode = current.weather_code !== undefined && current.weather_code !== null;
+    var weatherCode = hasWeatherCode ? Number(current.weather_code) : -1;
     var isDay = Number(current.is_day || 0) === 1;
 
     var dict = {};
@@ -177,7 +216,7 @@ function buildWeatherPayload(json, location, keys, nowUnix) {
 }
 
 function sendFetchError(keys, sendWeatherDict, log) {
-    s_fetch_in_flight = false;
+    endFetch();
     var dict = {};
     dict[keys.KEY_WEATHER_FETCH_ERROR] = 1;
     sendWeatherDict(dict);
@@ -237,7 +276,18 @@ function fetchForecast(location, keys, log, sendWeatherDict) {
     log('Fetching weather for ' + location.name);
 
     httpGetJson(url, function (json) {
-        s_fetch_in_flight = false;
+        // Guard against malformed/empty responses (e.g. API error bodies). Without
+        // this a missing "current" block would be sent to the watch as a bogus
+        // "0°, Clear sky" reading instead of a fetch error.
+        if (!json || !json.current || json.current.temperature_2m === undefined ||
+                json.current.temperature_2m === null ||
+                json.current.weather_code === undefined || json.current.weather_code === null ||
+                json.current.is_day === undefined || json.current.is_day === null) {
+            log('Forecast response missing current data');
+            sendFetchError(keys, sendWeatherDict, log);
+            return;
+        }
+        endFetch();
         sendWeatherDict(buildWeatherPayload(json, location, keys));
     }, function (err) {
         log('Forecast fetch failed: ' + err);
@@ -257,7 +307,7 @@ function fetchWeather(options) {
         log('Weather fetch already in flight, skipping duplicate request');
         return;
     }
-    s_fetch_in_flight = true;
+    beginFetch();
 
     if (settings.autodetect) {
         navigator.geolocation.getCurrentPosition(
@@ -297,6 +347,7 @@ function fetchWeather(options) {
 module.exports = {
     fetchWeather: fetchWeather,
     buildWeatherPayload: buildWeatherPayload,
+    getWeatherIcon: getWeatherIcon,
     extractReverseGeocodeName: extractReverseGeocodeName,
     getTimezoneDisplayName: getTimezoneDisplayName
 };

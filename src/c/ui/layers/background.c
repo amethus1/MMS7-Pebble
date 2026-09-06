@@ -22,6 +22,7 @@ static void update_proc(Layer* layer, GContext* ctx) {
     // Get layout coordinates
     int16_t header_y = layout_get_line_coord(LINE_HEADER_Y);
     int16_t header_split_x = layout_get_line_coord(LINE_HEADER_SPLIT_X);
+    int16_t header_split_top_y = layout_get_line_coord(LINE_HEADER_SPLIT_TOP_Y);
     int16_t left_x = layout_get_line_coord(LINE_LEFT_X);
     int16_t right_x = layout_get_line_coord(LINE_RIGHT_X);
     int16_t weather_y = layout_get_line_coord(LINE_WEATHER_Y);
@@ -34,7 +35,7 @@ static void update_proc(Layer* layer, GContext* ctx) {
         graphics_context_set_stroke_color(ctx, scheme->lines_bg);
 
         // Header split line on the right
-        graphics_draw_line(ctx, GPoint(header_split_x, 0), GPoint(header_split_x, header_y - 1));
+        graphics_draw_line(ctx, GPoint(header_split_x, header_split_top_y), GPoint(header_split_x, header_y - 1));
         // Header bottom
         graphics_draw_line(ctx, GPoint(0, header_y), GPoint(bounds.size.w, header_y));
         // Left column separators
@@ -74,11 +75,16 @@ static void update_proc(Layer* layer, GContext* ctx) {
     BatteryPalette battery_palette;
     battery_style_get_palette(settings, state->battery.charge_percent, &battery_palette);
 
-    GRect widget = layout_get_rect(LAYOUT_BATTERY_WIDGET);
     GRect box = layout_get_rect(LAYOUT_BATTERY_BOX);
+    GRect fill = layout_get_battery_fill_rect(
+        (LAYOUT_BATTERY_FILL_MAX_W * state->battery.charge_percent) / 100);
 
-    graphics_context_set_fill_color(ctx, battery_palette.background_color);
-    graphics_fill_rect(ctx, widget, 0, GCornerNone);
+    // Keep the header background clean. Battery state color is restricted to
+    // the charge fill instead of painting a large rectangular widget.
+    if (fill.size.w > 0) {
+        graphics_context_set_fill_color(ctx, battery_palette.fill_color);
+        graphics_fill_rect(ctx, fill, 0, GCornerNone);
+    }
 
     graphics_context_set_stroke_color(ctx, battery_palette.text_color);
     graphics_draw_line(ctx, GPoint(box.origin.x, box.origin.y), GPoint(box.origin.x + box.size.w - 2, box.origin.y));

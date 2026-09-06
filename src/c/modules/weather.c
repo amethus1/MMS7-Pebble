@@ -7,8 +7,10 @@
 #define _(str) str
 
 // Internal helper for degree replacement (__ -> °)
+// Only scans the actual string (up to the NUL) so it never touches stale bytes
+// left past the terminator in the persistent conditions buffer.
 static void replace_degree(char *s, int size_s){
-    for (int i=1; i<size_s; i++){
+    for (int i=1; i<size_s && s[i] != '\0'; i++){
         if ((s[i-1] == '_') && (s[i] == '_')){
             s[i-1] = (char)194;
             s[i]   = (char)176;
@@ -131,7 +133,9 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
         switch(t->key) {
             // Timezone can arrive independently of weather
             case KEY_TIME_ZONE_NAME:
-                if (strlen(t->value->cstring) > 0) {
+                // For a CSTRING, length counts the terminating NUL, so length > 1
+                // means "at least one character" without indexing the flexible array.
+                if (t->type == TUPLE_CSTRING && t->length > 1) {
                     snprintf(state->weather.timezone_name, sizeof(state->weather.timezone_name), "%s", t->value->cstring);
                     changed = true;
                 }
@@ -143,10 +147,12 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
                 
             // Weather data
             case KEY_LOCATION_NAME:
-                snprintf(state->weather.location_name, sizeof(state->weather.location_name), "%s", t->value->cstring);
-                state->weather.last_update_time = time(NULL);
-                changed = true;
-                weather_payload_changed = true;
+                if (t->type == TUPLE_CSTRING) {
+                    snprintf(state->weather.location_name, sizeof(state->weather.location_name), "%s", t->value->cstring);
+                    state->weather.last_update_time = time(NULL);
+                    changed = true;
+                    weather_payload_changed = true;
+                }
                 break;
             case KEY_LOCATION_LAT:
                 state->weather.location_latitude = t->value->int32;
@@ -194,10 +200,12 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
                 weather_payload_changed = true;
                 break;
             case KEY_WEATHER_CONDITIONS:
-                snprintf(state->weather.conditions_buffer, sizeof(state->weather.conditions_buffer), "%s", t->value->cstring);
-                replace_degree(state->weather.conditions_buffer, sizeof(state->weather.conditions_buffer));
-                changed = true;
-                weather_payload_changed = true;
+                if (t->type == TUPLE_CSTRING) {
+                    snprintf(state->weather.conditions_buffer, sizeof(state->weather.conditions_buffer), "%s", t->value->cstring);
+                    replace_degree(state->weather.conditions_buffer, sizeof(state->weather.conditions_buffer));
+                    changed = true;
+                    weather_payload_changed = true;
+                }
                 break;
             case KEY_SUN_RISE_UNIX:
                 state->weather.sunrise = (time_t)t->value->int32;
@@ -281,6 +289,16 @@ bool weather_is_night() {
 bool weather_has_data() {
     AppState* state = state_get_ptr();
     return state->weather.temp_c > -100 && state->weather.temp_c < 100;
+}
+
+bool weather_has_current_data() {
+    AppState* state = state_get_ptr();
+    // Deliberately independent of fetch_error: a failed send (phone out of
+    // range) says nothing about how old the cached reading is, and blanking
+    // the icon for it would leave an empty cell while every other cached
+    // weather field stays on screen. A failed fetch is already signalled by
+    // the red location banner.
+    return weather_has_data() && !state->weather.is_stale;
 }
 
 const char* weather_get_timezone() {

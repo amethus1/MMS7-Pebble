@@ -1,5 +1,7 @@
 #include "battery_style.h"
+#include "../modules/colors.h"
 
+#if defined(PBL_COLOR)
 static int clamp_percent(int percent) {
     if (percent < 0) {
         return 0;
@@ -9,11 +11,15 @@ static int clamp_percent(int percent) {
     }
     return percent;
 }
+#endif
 
 void battery_style_get_palette(const GlobalSettings* settings, int percent, BatteryPalette* palette) {
-    int clamped = clamp_percent(percent);
+    const ColorScheme* scheme = colors_get_scheme(settings->ColorProfile);
+
+    palette->text_color = scheme->battery_text;
 
 #if defined(PBL_COLOR)
+    int clamped = clamp_percent(percent);
     uint8_t variable_color;
 #if defined(PBL_ROUND)
     if (clamped > 30) {
@@ -33,57 +39,17 @@ void battery_style_get_palette(const GlobalSettings* settings, int percent, Batt
     }
 #endif
 
-    if (settings->ColorProfile == 0) {
-        palette->inverter_argb = GColorWhiteARGB8;
-        palette->background_argb = GColorBlackARGB8;
-    } else if (settings->ColorProfile == 1) {
-        palette->inverter_argb = GColorBlackARGB8;
-        palette->background_argb = GColorWhiteARGB8;
-    } else {
-        palette->inverter_argb = GColorWhiteARGB8;
-        palette->background_argb = variable_color;
+    GColor fill = (GColor8){ .argb = variable_color };
+    // The gauge is drawn straight onto the watchface background, so a state
+    // colour that matches it would be invisible - which is exactly what the
+    // "Black on Red" profile does at low battery. Fall back to the profile's
+    // own fill colour in that case.
+    if (gcolor_equal(fill, scheme->clock_bg)) {
+        fill = scheme->battery_fill;
     }
-
-    if (clamped <= 20) {
-        palette->inverter_argb = GColorWhiteARGB8;
-        palette->background_argb = variable_color;
-    }
-
-#if defined(PBL_PLATFORM_DIORITE)
-    if (clamped <= 20) {
-        if (settings->ColorProfile == 0) {
-            palette->inverter_argb = GColorBlackARGB8;
-            palette->background_argb = GColorWhiteARGB8;
-        } else if (settings->ColorProfile == 1) {
-            palette->inverter_argb = GColorWhiteARGB8;
-            palette->background_argb = GColorBlackARGB8;
-        } else {
-            palette->inverter_argb = GColorBlackARGB8;
-            palette->background_argb = GColorWhiteARGB8;
-        }
-    }
-#endif
+    palette->fill_color = fill;
 #else
-    if (clamped <= 20) {
-        if (settings->ColorProfile == 0) {
-            palette->inverter_argb = GColorBlackARGB8;
-            palette->background_argb = GColorWhiteARGB8;
-        } else {
-            palette->inverter_argb = GColorWhiteARGB8;
-            palette->background_argb = GColorBlackARGB8;
-        }
-    } else {
-        if (settings->ColorProfile == 1) {
-            palette->inverter_argb = GColorBlackARGB8;
-            palette->background_argb = GColorWhiteARGB8;
-        } else {
-            palette->inverter_argb = GColorWhiteARGB8;
-            palette->background_argb = GColorBlackARGB8;
-        }
-    }
+    (void)percent;
+    palette->fill_color = scheme->battery_fill;
 #endif
-
-    palette->text_color = (GColor8){ .argb = palette->inverter_argb };
-    palette->background_color = (GColor8){ .argb = palette->background_argb };
-    palette->fill_color = palette->background_color;
 }

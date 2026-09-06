@@ -9,13 +9,21 @@ struct DateLayer {
     TextLayer* cw_layer;  // Calendar week
 };
 
+#if defined(LAYOUT_LARGE_DISPLAY)
+#define DATE_MAIN_FONT FONT_KEY_GOTHIC_28_BOLD
+#define DATE_CW_FONT FONT_KEY_GOTHIC_18
+#else
+#define DATE_MAIN_FONT FONT_KEY_GOTHIC_24_BOLD
+#define DATE_CW_FONT FONT_KEY_GOTHIC_14
+#endif
+
 DateLayer* date_layer_create(GRect frame) {
     DateLayer* dl = malloc(sizeof(DateLayer));
     dl->root_layer = layer_create(frame);
     
     // Date (centered)
     dl->text_layer = text_layer_create(layout_get_rect(LAYOUT_DATE));
-    text_layer_set_font(dl->text_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
+    text_layer_set_font(dl->text_layer, fonts_get_system_font(DATE_MAIN_FONT));
     text_layer_set_text_alignment(dl->text_layer, GTextAlignmentCenter);
     text_layer_set_background_color(dl->text_layer, GColorClear);
     text_layer_set_text_color(dl->text_layer, GColorWhite);
@@ -23,8 +31,8 @@ DateLayer* date_layer_create(GRect frame) {
     
     // Calendar week
     dl->cw_layer = text_layer_create(layout_get_rect(LAYOUT_CW));
-    text_layer_set_font(dl->cw_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14));
-    text_layer_set_text_alignment(dl->cw_layer, GTextAlignmentLeft);
+    text_layer_set_font(dl->cw_layer, fonts_get_system_font(DATE_CW_FONT));
+    text_layer_set_text_alignment(dl->cw_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter, GTextAlignmentLeft));
     text_layer_set_background_color(dl->cw_layer, GColorClear);
     text_layer_set_text_color(dl->cw_layer, GColorWhite);
     layer_add_child(dl->root_layer, text_layer_get_layer(dl->cw_layer));

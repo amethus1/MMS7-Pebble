@@ -5,32 +5,44 @@
 // Digit slot for each digit (H1, H2, M1, M2, S1, S2)
 typedef struct {
     int value;
-    int size; // 15 or 41
+    int size;       // 15 or 41
+    int w, h;       // box dimensions for scalable digit art
+    bool box_mode;
     GColor color;
 } DigitSlot;
 
 struct TimeLayer {
     Layer* root_layer;
     Layer* digit_layers[6];
-    GColor color;
     bool show_seconds;
 };
 
 static void digit_update_proc(Layer* layer, GContext* ctx) {
     DigitSlot* slot = (DigitSlot*)layer_get_data(layer);
     graphics_context_set_stroke_color(ctx, slot->color);
-    digits_paint(ctx, slot->value, slot->size, GPoint(0,0));
+    if (slot->box_mode) {
+        digits_paint_box(ctx, slot->value, slot->w, slot->h, GPoint(0,0));
+    } else {
+        digits_paint(ctx, slot->value, slot->size, GPoint(0,0));
+    }
 }
 
 static void init_digit(TimeLayer* tl, int index, int size, GRect frame) {
     Layer* layer = layer_create_with_data(frame, sizeof(DigitSlot));
     tl->digit_layers[index] = layer;
-    
+
     DigitSlot* slot = (DigitSlot*)layer_get_data(layer);
     slot->size = size;
-    slot->value = 0; 
+    slot->w = frame.size.w;
+    slot->h = frame.size.h;
+#if defined(LAYOUT_LARGE_DISPLAY)
+    slot->box_mode = true;
+#else
+    slot->box_mode = false;
+#endif
+    slot->value = 0;
     slot->color = GColorWhite;
-    
+
     layer_set_update_proc(layer, digit_update_proc);
     layer_add_child(tl->root_layer, layer);
 }
@@ -38,7 +50,6 @@ static void init_digit(TimeLayer* tl, int index, int size, GRect frame) {
 TimeLayer* time_layer_create(GRect frame) {
     TimeLayer* tl = malloc(sizeof(TimeLayer));
     tl->root_layer = layer_create(frame);
-    tl->color = GColorWhite;
     tl->show_seconds = false;
 
     init_digit(tl, 0, 41, layout_get_time_digit_rect(DIGIT_H1));
@@ -93,7 +104,6 @@ void time_layer_update(TimeLayer* tl, int hour, int minute, int second) {
 }
 
 void time_layer_update_colors(TimeLayer* tl, GColor color) {
-    tl->color = color;
     for(int i=0; i<6; i++) {
         DigitSlot* slot = (DigitSlot*)layer_get_data(tl->digit_layers[i]);
         slot->color = color;

@@ -43,6 +43,22 @@ int main() {
     assert_true(w->fetch_error);
     w->fetch_error = false;
     assert_false(w->fetch_error);
+
+    // Test 5: Stale conditions must not be presented as current.
+    w->temp_c = 20;
+    w->is_stale = false;
+    w->fetch_error = false;
+    assert_true(weather_has_current_data());
+
+    w->is_stale = true;
+    assert_false(weather_has_current_data());
+
+    // A failed send says nothing about the age of the cached reading, so it
+    // must not blank the icon while every other cached field stays visible.
+    w->is_stale = false;
+    w->fetch_error = true;
+    assert_true(weather_has_current_data());
+    w->fetch_error = false;
     
     printf("ALL TESTS PASSED\n");
     return 0;
