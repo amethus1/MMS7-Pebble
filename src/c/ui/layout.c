@@ -37,9 +37,9 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_TEMP_DEGREE] = { .origin = {190, 24}, .size = {9, 20} },
     [LAYOUT_WEATHER_LOCATION]    = { .origin = {0, 0},    .size = {153, 22} },
     [LAYOUT_WEATHER_LAST_UPDATE] = { .origin = {154, 0},  .size = {46, 22} },
-    [LAYOUT_WEATHER_STRING1]     = { .origin = {120, 51}, .size = {77, 17} },
-    [LAYOUT_WEATHER_STRING2]     = { .origin = {120, 71}, .size = {77, 19} },
-    [LAYOUT_WEATHER_STRING3]     = { .origin = {3, 71},   .size = {114, 19} },
+    [LAYOUT_WEATHER_STRING1]     = { .origin = {119, 53}, .size = {78, 22} },
+    [LAYOUT_WEATHER_STRING2]     = { .origin = {119, 72}, .size = {78, 22} },
+    [LAYOUT_WEATHER_STRING3]     = { .origin = {3, 71},   .size = {114, 22} },
     [LAYOUT_DATE]                = { .origin = {0, 88},   .size = {200, 38} },
     [LAYOUT_CW]                  = { .origin = {100, 183},.size = {90, 26} },
     [LAYOUT_BATTERY_TEXT]        = { .origin = {72, 23},  .size = {41, 22} },
@@ -181,9 +181,9 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_STRING3]     = { .origin = {6, 62},   .size = {97, 16} },  // Humidity / pressure
     [LAYOUT_DATE]                = { .origin = {0, 75},   .size = {180, 26} },
     [LAYOUT_CW]                  = { .origin = {70, 145}, .size = {40, 16} },
-    [LAYOUT_BATTERY_TEXT]        = { .origin = {59, 32},  .size = {42, 30} },
-    [LAYOUT_BATTERY_TIME]        = { .origin = {59, 49},  .size = {42, 16} },  // Reserved for compatibility
-    [LAYOUT_BATTERY_BOX]         = { .origin = {60, 34},  .size = {40, 15} },
+    [LAYOUT_BATTERY_TEXT]        = { .origin = {58, 32},  .size = {42, 14} },  // Percentage inside the outline
+    [LAYOUT_BATTERY_TIME]        = { .origin = {56, 47},  .size = {47, 16} },  // Time since last charge
+    [LAYOUT_BATTERY_BOX]         = { .origin = {58, 32},  .size = {42, 15} },  // Same size as the original MSS7 art
     [LAYOUT_CONNECTION]          = { .origin = {40, 0},   .size = {100, 16} },
     [LAYOUT_SUNRISE]             = { .origin = {38, 145}, .size = {34, 16} },
     [LAYOUT_SUNSET]              = { .origin = {116, 145},.size = {34, 16} },
@@ -216,7 +216,7 @@ static const int16_t s_lines[LINE_COUNT] = {
     [LINE_FOOTER_Y]           = 161,
 };
 
-static const GRect s_batt_fill = { .origin = {62, 36}, .size = {0, 11} };
+static const GRect s_batt_fill = { .origin = {60, 34}, .size = {0, 11} };
 
 static const int16_t s_sunrise_arrow_x = 34;
 static const int16_t s_sunset_arrow_x = 112;
@@ -228,20 +228,20 @@ static const int16_t s_sun_arrow_bottom_y = 158;
 // Basalt / Diorite: the classic 144x168 MSS grid
 // ----------------------------------------------------------------------------
 static const GRect s_rects[LAYOUT_COUNT] = {
-    [LAYOUT_WEATHER_ICON_DAY]    = { .origin = {7, 15},   .size = {33, 33} },
-    [LAYOUT_WEATHER_ICON_MOON]   = { .origin = {7, 21},   .size = {33, 33} },
+    [LAYOUT_WEATHER_ICON_DAY]    = { .origin = {4, 15},   .size = {33, 33} },
+    [LAYOUT_WEATHER_ICON_MOON]   = { .origin = {4, 21},   .size = {33, 33} },
     [LAYOUT_WEATHER_TEMP]        = { .origin = {50, 10},  .size = {94, 30} },
     [LAYOUT_WEATHER_TEMP_DEGREE] = { .origin = {0, 0},    .size = {0, 0} },
     [LAYOUT_WEATHER_LOCATION]    = { .origin = {0, 0},    .size = {110, 16} },
     [LAYOUT_WEATHER_LAST_UPDATE] = { .origin = {111, 0},  .size = {33, 16} },
-    [LAYOUT_WEATHER_STRING1]     = { .origin = {85, 36},  .size = {58, 14} },  // Right row 1: Hi/Lo
-    [LAYOUT_WEATHER_STRING2]     = { .origin = {85, 50},  .size = {58, 14} },  // Right row 2: Wind
-    [LAYOUT_WEATHER_STRING3]     = { .origin = {1, 50},   .size = {84, 14} },  // Left row 1 + row 2 (combined)
+    [LAYOUT_WEATHER_STRING1]     = { .origin = {88, 36},  .size = {55, 14} },  // Right row 1: Hi/Lo
+    [LAYOUT_WEATHER_STRING2]     = { .origin = {88, 50},  .size = {55, 14} },  // Right row 2: Wind
+    [LAYOUT_WEATHER_STRING3]     = { .origin = {1, 50},   .size = {87, 14} },  // Left row 1 + row 2 (combined)
     [LAYOUT_DATE]                = { .origin = {0, 63},   .size = {144, 30} },
     [LAYOUT_CW]                  = { .origin = {72, 135}, .size = {64, 20} },
-    [LAYOUT_BATTERY_TEXT]        = { .origin = {47, 17},  .size = {38, 33} },
-    [LAYOUT_BATTERY_TIME]        = { .origin = {47, 32},  .size = {38, 18} },  // Reserved for compatibility
-    [LAYOUT_BATTERY_BOX]         = { .origin = {49, 18},  .size = {34, 13} },
+    [LAYOUT_BATTERY_TEXT]        = { .origin = {43, 19},  .size = {42, 14} },  // Percentage inside the outline
+    [LAYOUT_BATTERY_TIME]        = { .origin = {40, 34},  .size = {48, 16} },  // Time since last charge
+    [LAYOUT_BATTERY_BOX]         = { .origin = {43, 19},  .size = {42, 15} },  // Same size as the original MSS7 art
     [LAYOUT_CONNECTION]          = { .origin = {44, 152}, .size = {56, 20} },
     [LAYOUT_SUNRISE]             = { .origin = {7, 152},  .size = {50, 16} },
     [LAYOUT_SUNSET]              = { .origin = {110, 152},.size = {33, 16} },
@@ -266,15 +266,15 @@ static const int16_t s_lines[LINE_COUNT] = {
     [LINE_HEADER_Y]           = 16,
     [LINE_HEADER_SPLIT_X]     = 110,
     [LINE_HEADER_SPLIT_TOP_Y] = 0,
-    [LINE_LEFT_X]             = 47,
-    [LINE_RIGHT_X]            = 85,
+    [LINE_LEFT_X]             = 40,
+    [LINE_RIGHT_X]            = 88,
     [LINE_WEATHER_Y]          = 50,
     [LINE_DATE_Y]             = 69,
     [LINE_TIME_TOP_Y]         = 90,
     [LINE_FOOTER_Y]           = 154,
 };
 
-static const GRect s_batt_fill = { .origin = {51, 20}, .size = {0, 9} };
+static const GRect s_batt_fill = { .origin = {45, 21}, .size = {0, 11} };
 
 static const int16_t s_sunrise_arrow_x = 3;
 static const int16_t s_sunset_arrow_x = 106;

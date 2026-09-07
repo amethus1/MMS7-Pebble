@@ -10,10 +10,9 @@
 
 struct StatusLayer {
     Layer* root_layer;
-    TextLayer* battery_layer;
-#if defined(LAYOUT_LARGE_DISPLAY)
-    TextLayer* battery_time_layer;
-#endif
+    TextLayer* battery_layer;       // Percentage, drawn inside the battery outline
+    TextLayer* battery_fill_layer;  // Same text, clipped to the charge bar and drawn inverted
+    TextLayer* battery_time_layer;  // Time since the last charge, below it
     TextLayer* connection_layer;
     TextLayer* sunrise_layer;
     TextLayer* sunset_layer;
@@ -34,9 +33,10 @@ struct StatusLayer {
 #endif
 };
 
+// The battery outline is the original MSS7 size (42x15 on the classic
+// screens) with the percentage drawn inside it, inverted over the charge bar.
 #if defined(LAYOUT_LARGE_DISPLAY)
 #define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_18_BOLD
-#define STATUS_BATTERY_TIME_FONT FONT_KEY_GOTHIC_14
 #define STATUS_SMALL_FONT FONT_KEY_GOTHIC_18
 // On Gabbro the timezone / health slot is in the bottom cap of the circle (~100px wide).
 #define STATUS_MEDIUM_FONT PBL_IF_ROUND_ELSE(FONT_KEY_GOTHIC_18, FONT_KEY_GOTHIC_24)
@@ -50,6 +50,7 @@ struct StatusLayer {
 #define STATUS_SMALL_FONT FONT_KEY_GOTHIC_14
 #define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_18
 #endif
+#define STATUS_BATTERY_TIME_FONT FONT_KEY_GOTHIC_14
 
 #if defined(PBL_HEALTH)
 static void health_trend_update_proc(Layer* layer, GContext* ctx) {
@@ -114,21 +115,34 @@ static void format_battery_duration_mode0(char* buffer, size_t size, time_t seco
     }
 }
 
+// Narrow the inverted percentage's frame to the charge bar, keeping its
+// bounds at the full text box so it renders in exactly the same place as
+// the normal copy. Hidden when the bar is empty.
+static void status_layer_clip_battery_fill_text(StatusLayer* sl) {
+    AppState* state = state_get_ptr();
+    GRect text = layout_get_rect(LAYOUT_BATTERY_TEXT);
+    GRect fill = layout_get_battery_fill_rect(
+        (LAYOUT_BATTERY_FILL_MAX_W * state->battery.charge_percent) / 100);
+    int16_t clip_w = fill.origin.x + fill.size.w - text.origin.x;
+    Layer* layer = text_layer_get_layer(sl->battery_fill_layer);
+    layer_set_hidden(layer, fill.size.w <= 0);
+    layer_set_frame(layer, GRect(text.origin.x, text.origin.y, clip_w, text.size.h));
+    layer_set_bounds(layer, GRect(0, 0, text.size.w, text.size.h));
+}
+
 StatusLayer* status_layer_create(GRect frame) {
     StatusLayer* sl = malloc(sizeof(StatusLayer));
     sl->root_layer = layer_create(frame);
     sl->batt_buf[0] = '\0';
     sl->batt_time_buf[0] = '\0';
 
-#if defined(LAYOUT_LARGE_DISPLAY)
     sl->battery_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TEXT), STATUS_BATTERY_FONT, GTextAlignmentCenter, GColorWhite);
     text_layer_set_text(sl->battery_layer, "100%");
+    // The inverted copy shares the full text box for layout (so the glyphs
+    // line up exactly) but its frame is narrowed to the charge bar each update.
+    sl->battery_fill_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TEXT), STATUS_BATTERY_FONT, GTextAlignmentCenter, GColorBlack);
+    text_layer_set_text(sl->battery_fill_layer, "100%");
     sl->battery_time_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TIME), STATUS_BATTERY_TIME_FONT, GTextAlignmentCenter, GColorWhite);
-#else
-    sl->battery_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TEXT), STATUS_BATTERY_FONT, GTextAlignmentCenter, GColorWhite);
-    text_layer_set_overflow_mode(sl->battery_layer, GTextOverflowModeWordWrap);
-    text_layer_set_text(sl->battery_layer, "100%\n0:00 d");
-#endif
 
     sl->connection_layer = create_text_layer(layout_get_rect(LAYOUT_CONNECTION), STATUS_SMALL_FONT, GTextAlignmentCenter, GColorWhite);
 
@@ -139,9 +153,8 @@ StatusLayer* status_layer_create(GRect frame) {
                                            PBL_IF_ROUND_ELSE(GTextAlignmentCenter, GTextAlignmentLeft), GColorWhite);
     
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_layer));
-#if defined(LAYOUT_LARGE_DISPLAY)
+    layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_fill_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_time_layer));
-#endif
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->connection_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->sunrise_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->sunset_layer));
@@ -168,9 +181,8 @@ StatusLayer* status_layer_create(GRect frame) {
 
 void status_layer_destroy(StatusLayer* sl) {
     text_layer_destroy(sl->battery_layer);
-#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_destroy(sl->battery_fill_layer);
     text_layer_destroy(sl->battery_time_layer);
-#endif
     text_layer_destroy(sl->connection_layer);
     text_layer_destroy(sl->sunrise_layer);
     text_layer_destroy(sl->sunset_layer);
@@ -210,28 +222,21 @@ void status_layer_update(StatusLayer* sl) {
         }
     }
     format_battery_duration_mode0(sl->batt_time_buf, sizeof(sl->batt_time_buf), battery_duration);
-#if defined(LAYOUT_LARGE_DISPLAY)
     if (state->battery.charge_state == 1) {
         snprintf(sl->batt_buf, sizeof(sl->batt_buf), "*%d%%", state->battery.charge_percent);
     } else {
         snprintf(sl->batt_buf, sizeof(sl->batt_buf), "%d%%", state->battery.charge_percent);
     }
     text_layer_set_text(sl->battery_time_layer, sl->batt_time_buf);
-#else
-    if (state->battery.charge_state == 1) {
-        snprintf(sl->batt_buf, sizeof(sl->batt_buf), "*%d%%\n%s", state->battery.charge_percent, sl->batt_time_buf);
-    } else {
-        snprintf(sl->batt_buf, sizeof(sl->batt_buf), "%d%%\n%s", state->battery.charge_percent, sl->batt_time_buf);
-    }
-#endif
     text_layer_set_text(sl->battery_layer, sl->batt_buf);
+    text_layer_set_text(sl->battery_fill_layer, sl->batt_buf);
+    status_layer_clip_battery_fill_text(sl);
 
     BatteryPalette battery_palette;
     battery_style_get_palette(settings, state->battery.charge_percent, &battery_palette);
     text_layer_set_text_color(sl->battery_layer, battery_palette.text_color);
-#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_set_text_color(sl->battery_fill_layer, battery_palette.fill_text_color);
     text_layer_set_text_color(sl->battery_time_layer, battery_palette.text_color);
-#endif
     
     // Connection - hide if settings say so
     if (settings->HideBluetooth && state->connection.bluetooth_connected) {
@@ -347,9 +352,8 @@ void status_layer_update_colors(StatusLayer* sl) {
     BatteryPalette battery_palette;
     battery_style_get_palette(settings, state->battery.charge_percent, &battery_palette);
     text_layer_set_text_color(sl->battery_layer, battery_palette.text_color);
-#if defined(LAYOUT_LARGE_DISPLAY)
+    text_layer_set_text_color(sl->battery_fill_layer, battery_palette.fill_text_color);
     text_layer_set_text_color(sl->battery_time_layer, battery_palette.text_color);
-#endif
 #if defined(PBL_HEALTH)
     text_layer_set_text_color(sl->health_text_layer, scheme->steps);
 #endif

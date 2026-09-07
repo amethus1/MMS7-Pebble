@@ -49,7 +49,11 @@ void battery_style_get_palette(const GlobalSettings* settings, int percent, Batt
     }
     palette->fill_color = fill;
 #else
+    // Black & white: a solid bar in the text colour, with the percentage
+    // inverted over it, reads far better than text over a dither.
     (void)percent;
-    palette->fill_color = scheme->battery_fill;
+    palette->fill_color = scheme->battery_text;
 #endif
+
+    palette->fill_text_color = scheme->battery_bg;
 }

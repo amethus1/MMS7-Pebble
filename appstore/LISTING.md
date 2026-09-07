@@ -61,6 +61,7 @@ MSS Refreshed 17.0 — first release.
 • Weather from Open-Meteo (no API key, no account)
 • Settings built into the Pebble app via Clay
 • Fiscal week support, timezone / step display, hide-able CW and Bluetooth labels
+• Battery gauge drawn like the original: percentage inside the outline, inverted over the charge bar
 • Smaller and faster than MSS7 16.x
 ```
 

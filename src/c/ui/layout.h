@@ -88,10 +88,8 @@ int16_t layout_get_line_coord(LineId id);
 // Maximum native fill width that keeps the fill inside LAYOUT_BATTERY_BOX.
 #if defined(LAYOUT_LARGE_DISPLAY)
 #define LAYOUT_BATTERY_FILL_MAX_W 38
-#elif defined(PBL_ROUND)
-#define LAYOUT_BATTERY_FILL_MAX_W 35
 #else
-#define LAYOUT_BATTERY_FILL_MAX_W 28
+#define LAYOUT_BATTERY_FILL_MAX_W 37
 #endif
 
 // Get the battery fill rectangle. Width is 0..LAYOUT_BATTERY_FILL_MAX_W.
