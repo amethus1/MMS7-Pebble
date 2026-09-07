@@ -43,6 +43,9 @@ typedef struct {
   // Hiding Elements
   int HideCW;
   int HideBluetooth;
+  int HideBatteryTime;   // 1 hides the time-since-charge under the battery
+  int LeadingZero;       // 0 drops the leading zero of single-digit hours
+  int SleepUntilHour;    // Auto health mode: sleep until this hour, steps after
   
   // State
   int AppFirstStart;

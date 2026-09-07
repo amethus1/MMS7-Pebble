@@ -76,6 +76,34 @@ module.exports = function (minified) {
         });
     }
 
+    // --- Presets: fill in a set of values; the user still taps Save ---
+    var PRESETS = {
+        classic: null,   // null = every default
+        clean: {
+            KEY_SET_DATE_FORMAT: '%a %d %b',
+            KEY_SET_LABEL_INDEX_1: 5,   // hi / lo
+            KEY_SET_LABEL_INDEX_2: 0,   // (empty)
+            KEY_SET_LABEL_INDEX_3: 3,   // humidity
+            KEY_SET_LABEL_INDEX_4: 0,   // (empty)
+            hideBluetooth: true,
+            KEY_SET_HIDE_BATTERY_TIME: true,
+            KEY_SET_MOON_PHASE: 3,
+            KEY_SET_DISPLAY_SEC: 0
+        }
+    };
+    function applyPreset(name) {
+        resetToDefaults();
+        var values = PRESETS[name];
+        if (!values) return;
+        Object.keys(values).forEach(function (key) {
+            var item = byKey(key);
+            if (item) item.set(values[key]);
+        });
+        applyWeekMode();
+        applyExtraInfo();
+        applyLocation();
+    }
+
     // --- Reset ---
     var SKIP_TYPES = { heading: 1, text: 1, button: 1, submit: 1, section: 1 };
     function resetToDefaults() {
@@ -118,6 +146,11 @@ module.exports = function (minified) {
                 aboutButton.set(aboutShown ? 'Hide the guide' : 'What do the small things mean?');
             });
         }
+
+        var classicButton = byId('preset_classic');
+        if (classicButton) classicButton.on('click', function () { applyPreset('classic'); });
+        var cleanButton = byId('preset_clean');
+        if (cleanButton) cleanButton.on('click', function () { applyPreset('clean'); });
 
         var resetButton = byId('reset_defaults');
         if (resetButton) resetButton.on('click', resetToDefaults);

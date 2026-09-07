@@ -5,6 +5,7 @@
 #include "../../modules/colors.h"
 #include "../../modules/weather.h"
 #include "../../modules/weather_format.h"
+#include "../../modules/rules.h"
 #include "../../mooncalc.h"
 #include "../layout.h"
 
@@ -71,13 +72,9 @@ static GColor temperature_color(int temp_c) {
 }
 
 static bool should_show_moon(const GlobalSettings* settings) {
-    if (settings->MoonPhase == 2) {
-        return false;
-    }
-    if (settings->MoonPhase == 1) {
-        return true;
-    }
-    return weather_is_night();
+    AppState* state = state_get_ptr();
+    return rules_show_moon(settings->MoonPhase, weather_is_night(),
+                           weather_has_current_data(), state->weather.icon_id);
 }
 
 static void format_weather_info_line(char *buffer, size_t size, int label_index,

@@ -36,6 +36,13 @@ cc -std=c99 -Wall -Wextra -Werror \
   -o /tmp/test_battery
 /tmp/test_battery
 
+cc -std=c99 -Wall -Wextra -Werror \
+  -I src/c \
+  tests/test_rules.c \
+  src/c/modules/rules.c \
+  -o /tmp/test_rules
+/tmp/test_rules
+
 echo "== Pebble build =="
 build_log="$(mktemp)"
 pebble clean >/dev/null 2>&1

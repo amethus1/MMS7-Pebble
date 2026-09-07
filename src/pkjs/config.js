@@ -42,6 +42,13 @@ var LAYOUT_GUIDE_HTML =
     'shown as <i>first / second</i>.' +
     '</div>';
 
+// Preset previews: the face as it looks with each preset (Pebble Time shown)
+var PRESET_PREVIEWS_HTML =
+    '<div style="display:flex;justify-content:space-around;text-align:center;font-size:0.85em">' +
+    '<div><img src="data:image/png;base64,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" alt="Classic" style="width:120px;image-rendering:pixelated;display:block;margin:0 auto 4px">Classic</div>' +
+    '<div><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACoCAMAAAA4sZdKAAAAP1BMVEUAAAD///+qqqpVqgBV/1X//1X//wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMGwoNAAAAEHRSTlP/////////AAAAAAAAAAAAwAi+qgAABJlJREFUeNrtm4G6qyAIgGGl7//I99y1DNAUDa2do1+rrW/Tf4BIigBDywseVibQnwTCn/K+fD4ZATVXhLgR5SrQVx6A8H20AYVX4Npklr7UAuFecw1QkNTOhqeXeqCNqAVICguk6GqAjnpr1ZcG4uaOUA1EVNYAJGyIywSp6IcABeNJ21CQEI4BIn4o0cuI8dT1snYb0onwUUNHBY8G6PWwkoR07rqwTZVzC9D6UyqBUFtagNY1ReQ4kBNAWisvAPGmt/fvc0TkuGjYxzfQkitaoJULYweCcD5D4HgcCECeF62E1pURrVmgTUnug+LgDAjE8b8s3DHlgIBoZ82pbBeMcy6y6yzQgRVkpAQKskoZNUWJiPJAsFQCxQYe8TjHZJMF2uxmo/n/HhaqsjaglKboVRKdSmj5SAgqgJgFpYGIigIZocsCRSZUAqJ6glMgoTw90K49fS8LROspkIuAXE5l1APtXmjR+yHmDs+AsoiWnpr7nfXEihLDaQrIYixrBhL3zEZ7QyCbeEgMHRqj7g7EpKLo9n2B0uGHQkSxUVuFsKkA7XzoyHT7wUG+k+X+p44MjikQeYpunIi7DkQnKtk8wz5NUD/Ld1lCyI8AARHoGCDSJCKkgIaq7GhaIH5kg/2nvNNAgidocDxQxBPeY90MkykQpu5gygPcAITwBCCiGta/KNDYqTCYK2MT6BFAtCfEvWI8EB0S1QtjI4F0bqwvUBiR9SPhq/daBgYb0i2R9lbZYTmoU1p/G6pccBsFpA5+B/khfXrDHDom0AT6qkXgWb64aLKnkKSCsCcvRLwDCEmWDAVC7EFUBtozd+S0nLhvmfrClBJylzhBCoie499ZAAndlICYMUW/MwAK05Y00VIAkeY4cvS79lDoTdMAFIgeAwTcHdwCJFoTpnM/EPAsWiMgnk+pBjruW9tQEQipo0k4zG5AxJ8Ih4MpjR33bf0QVwAmbEE6ydR9M0/d4/luAl0EGhi/I84g/49H+ydZJ3fVZMVzrSbM1lO3zoV0obWVB3P/rM7V8fCxlQczsq5Lfj/GX0zVVLNd4YSo7tGUBAQRkdluhIrakAHhpW1c7V9IfvWqu1B+oSD8CTSBJtDvA3qcHxoB9LihIzGWyzG6KXA4tjfWx3mYj/QawjOSvdgj8rSLz78VSKSMXeIpqAxrjfqKKSqMWlUdynULk72wyZpU1aPhQkrBMeIEmkDPA7oWD02gXwpU5alLo4mFp2aTG6U5C9SIMFOTsg+LETEzuKImAs/VpHQqcuntSjhUmEHTPi4AGMwMquYY8TtnYZ88Tz3LLFBex/tcXmFV7+6sw9dxbclDPPxJeFVOr9sC0S12wPOuL2xFMgWC9q1RVkB7ijyyHYDPAcJmjXWVEALcaUMc4hrQyxgI7wU6gkLgmwnQwFM/MWN8llnmJoHfXPx29seZ3LVuBngz7zfee9rO9smTI8Vn+r89+b/RH/cbnzh2lD4Sko2JZjwAF8/7zRAgKAL58LPONuQzpsol5IkeuwGJi4cSkH0vY39R2nIJyPfo9p50k6hLF/yQT+jartt72vn90eAsuvIPKgQeAXd3LiUAAAAASUVORK5CYII=" alt="Clean" style="width:120px;image-rendering:pixelated;display:block;margin:0 auto 4px">Clean</div>' +
+    '</div>';
+
 var ABOUT_HTML =
     '<div style="font-size:0.9em;line-height:1.4">' +
     '<p><b>Battery.</b> The bar shows charge; the small time under it is how long since the watch was last unplugged (or, while charging, how long it has been on the charger). A * before the percentage means charging.</p>' +
@@ -50,7 +57,8 @@ var ABOUT_HTML =
     '<p><b>Steps and the arrow.</b> With steps selected under Extra information, the arrow next to the count compares today with your recent daily average: up means ahead, down means behind.</p>' +
     '<p><b>Week number.</b> CW is the ISO calendar week. Fiscal week (WK) counts weeks from a start date you choose - useful if your work year does not start in January.</p>' +
     '<p><b>Seconds.</b> Showing seconds all the time costs battery. "On shake" shows them for a few seconds when you flick your wrist.</p>' +
-    '<p><b>Moon.</b> At night the weather icon is replaced by the current moon phase. You can turn that off above.</p>' +
+    '<p><b>Moon.</b> At night the weather icon can be replaced by the current moon phase. "Unless it is raining or snowing" keeps the weather icon on wet nights, when it is the more useful of the two.</p>' +
+    '<p><b>Steps by day, sleep at night.</b> Shows last night\'s sleep (counted from 6 pm the evening before) until the time you pick, then steps for the rest of the day.</p>' +
     '<p>MSS Refreshed is a fan update of Multifunctional 7 Segment by FG. Source and downloads: github.com/amethus1/MMS7-Pebble</p>' +
     '</div>';
 
@@ -58,6 +66,29 @@ module.exports = [
     {
         "type": "heading",
         "defaultValue": "MSS Refreshed"
+    },
+
+    // ========== PRESETS ==========
+    {
+        "type": "section",
+        "items": [
+            { "type": "heading", "defaultValue": "Presets", "size": 5 },
+            { "type": "text", "id": "preset_previews", "defaultValue": PRESET_PREVIEWS_HTML },
+            {
+                "type": "button",
+                "id": "preset_classic",
+                "defaultValue": "Classic - everything, like the original"
+            },
+            {
+                "type": "button",
+                "id": "preset_clean",
+                "defaultValue": "Clean - fewer details, more room"
+            },
+            {
+                "type": "text",
+                "defaultValue": "A preset fills in the settings below; you can still change any of them before tapping Save."
+            }
+        ]
     },
 
     // ========== APPEARANCE ==========
@@ -100,13 +131,21 @@ module.exports = [
                 "description": "The separator lines between sections"
             },
             {
+                "type": "toggle",
+                "messageKey": "KEY_SET_HIDE_BATTERY_TIME",
+                "label": "Hide the time under the battery",
+                "defaultValue": false,
+                "description": "That small time is how long since the last charge"
+            },
+            {
                 "type": "select",
                 "messageKey": "KEY_SET_MOON_PHASE",
                 "label": "Moon phase",
                 "defaultValue": 0,
                 "options": [
-                    { "label": "Replaces the weather icon at night", "value": 0 },
-                    { "label": "Always shown", "value": 1 },
+                    { "label": "At night, replacing the weather icon", "value": 0 },
+                    { "label": "At night, unless it is raining or snowing", "value": 3 },
+                    { "label": "Always", "value": 1 },
                     { "label": "Never - always the weather icon", "value": 2 }
                 ]
             },
@@ -156,6 +195,13 @@ module.exports = [
                     { "label": "On shake, for 15 s", "value": 3 },
                     { "label": "On shake, for 30 s", "value": 4 }
                 ]
+            },
+            {
+                "type": "toggle",
+                "messageKey": "KEY_SET_LEADING_ZERO",
+                "label": "Leading zero (08:30)",
+                "defaultValue": true,
+                "description": "Off shows 8:30"
             },
             {
                 // Drives the two hidden toggles below (see custom-clay.js), so
@@ -396,6 +442,19 @@ module.exports = [
                 "options": [
                     { "label": "Nothing", "value": 0 },
                     { "label": "Timezone", "value": 5 }
+                ]
+            },
+            {
+                "type": "select",
+                "messageKey": "KEY_SET_SLEEP_UNTIL_HOUR",
+                "capabilities": ["HEALTH"],
+                "label": "Show sleep until",
+                "defaultValue": 10,
+                "description": "With \"Steps by day, sleep at night\": last night's sleep is shown until this time, steps after",
+                "options": [
+                    { "label": "06:00", "value": 6 }, { "label": "07:00", "value": 7 }, { "label": "08:00", "value": 8 },
+                    { "label": "09:00", "value": 9 }, { "label": "10:00", "value": 10 }, { "label": "11:00", "value": 11 },
+                    { "label": "12:00", "value": 12 }, { "label": "13:00", "value": 13 }, { "label": "14:00", "value": 14 }
                 ]
             },
             {

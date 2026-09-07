@@ -51,7 +51,28 @@ programmer; the port to the new watches was done with AI assistance, and the
 source is published so anyone can check or improve it.
 ```
 
-## 3. Release notes (first release)
+## 3. Release notes
+
+For the next release (17.1) the notes are:
+
+```
+MSS Refreshed 17.1
+
+• Settings page reorganised: options only appear when relevant, one clear
+  week-number choice, Classic and Clean presets with previews, reset button,
+  and a short guide to what the small things mean
+• Weather without GPS uses the phone's last position and marks it with ~;
+  a typed city is only used if you entered one - no more silent Berlin
+• "!" before the weather age when the last fetch failed, "--" instead of
+  fake zeros before the first weather, and "--" for steps when there is no
+  health data - all readable on black-and-white watches
+• New options: hide the time under the battery, drop the leading zero
+  (8:30), moon at night unless it is raining or snowing, and last night's
+  sleep shown until a time you choose
+• Blinking backlight really blinks once a second now
+```
+
+### First release (17.0) notes, for reference
 
 ```
 MSS Refreshed 17.0 — first release.

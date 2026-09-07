@@ -36,6 +36,9 @@ static void sanitize_settings(void) {
     s_settings.FiscalStartMonth = clamp_int(s_settings.FiscalStartMonth, 0, 11);
     s_settings.FiscalStartDay = clamp_int(s_settings.FiscalStartDay, 1, 31);
     s_settings.ShowGridLines = clamp_int(s_settings.ShowGridLines, 0, 1);
+    s_settings.HideBatteryTime = clamp_int(s_settings.HideBatteryTime, 0, 1);
+    s_settings.LeadingZero = clamp_int(s_settings.LeadingZero, 0, 1);
+    s_settings.SleepUntilHour = clamp_int(s_settings.SleepUntilHour, 0, 23);
 }
 
 GlobalSettings* settings_get_instance() {
@@ -71,6 +74,9 @@ void settings_load() {
   s_settings.MoonPhase = 0;
   s_settings.HideCW = 0;
   s_settings.HideBluetooth = 0;
+  s_settings.HideBatteryTime = 0;
+  s_settings.LeadingZero = 1;
+  s_settings.SleepUntilHour = 10;
   s_settings.warning_color_location = 0;
 
   // Load from storage
@@ -100,6 +106,9 @@ void settings_load() {
   if (persist_exists(KEY_SET_MOON_PHASE)) s_settings.MoonPhase = persist_read_int(KEY_SET_MOON_PHASE);
   if (persist_exists(KEY_HIDE_CW)) s_settings.HideCW = persist_read_int(KEY_HIDE_CW);
   if (persist_exists(KEY_HIDE_BLUETOOTH)) s_settings.HideBluetooth = persist_read_int(KEY_HIDE_BLUETOOTH);
+  if (persist_exists(KEY_SET_HIDE_BATTERY_TIME)) s_settings.HideBatteryTime = persist_read_int(KEY_SET_HIDE_BATTERY_TIME);
+  if (persist_exists(KEY_SET_LEADING_ZERO)) s_settings.LeadingZero = persist_read_int(KEY_SET_LEADING_ZERO);
+  if (persist_exists(KEY_SET_SLEEP_UNTIL_HOUR)) s_settings.SleepUntilHour = persist_read_int(KEY_SET_SLEEP_UNTIL_HOUR);
   
   if (persist_exists(KEY_DETECT_FIRST_START)) s_settings.AppFirstStart = persist_read_int(KEY_DETECT_FIRST_START);
   else s_settings.AppFirstStart = 1;
@@ -137,6 +146,9 @@ void settings_save() {
   persist_write_int(KEY_SET_MOON_PHASE, s_settings.MoonPhase);
   persist_write_int(KEY_HIDE_CW, s_settings.HideCW);
   persist_write_int(KEY_HIDE_BLUETOOTH, s_settings.HideBluetooth);
+  persist_write_int(KEY_SET_HIDE_BATTERY_TIME, s_settings.HideBatteryTime);
+  persist_write_int(KEY_SET_LEADING_ZERO, s_settings.LeadingZero);
+  persist_write_int(KEY_SET_SLEEP_UNTIL_HOUR, s_settings.SleepUntilHour);
   
   persist_write_int(KEY_DETECT_FIRST_START, s_settings.AppFirstStart);
   persist_write_int(KEY_WARN_LOCATION, s_settings.warning_color_location);
@@ -263,6 +275,18 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         break;
       case KEY_HIDE_BLUETOOTH:
         s_settings.HideBluetooth = tuple_to_int(t, s_settings.HideBluetooth);
+        changed = true;
+        break;
+      case KEY_SET_HIDE_BATTERY_TIME:
+        s_settings.HideBatteryTime = tuple_to_int(t, s_settings.HideBatteryTime);
+        changed = true;
+        break;
+      case KEY_SET_LEADING_ZERO:
+        s_settings.LeadingZero = tuple_to_int(t, s_settings.LeadingZero);
+        changed = true;
+        break;
+      case KEY_SET_SLEEP_UNTIL_HOUR:
+        s_settings.SleepUntilHour = tuple_to_int(t, s_settings.SleepUntilHour);
         changed = true;
         break;
       case KEY_DETECT_FIRST_START:

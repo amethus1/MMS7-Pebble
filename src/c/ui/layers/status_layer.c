@@ -6,6 +6,7 @@
 #include "../../modules/colors.h"
 #include "../../modules/weather.h"
 #include "../battery_style.h"
+#include "../../modules/rules.h"
 #include "../layout.h"
 
 struct StatusLayer {
@@ -228,6 +229,7 @@ void status_layer_update(StatusLayer* sl) {
         snprintf(sl->batt_buf, sizeof(sl->batt_buf), "%d%%", state->battery.charge_percent);
     }
     text_layer_set_text(sl->battery_time_layer, sl->batt_time_buf);
+    layer_set_hidden(text_layer_get_layer(sl->battery_time_layer), settings->HideBatteryTime != 0);
     text_layer_set_text(sl->battery_layer, sl->batt_buf);
     text_layer_set_text(sl->battery_fill_layer, sl->batt_buf);
     status_layer_clip_battery_fill_text(sl);
@@ -316,7 +318,10 @@ void status_layer_update(StatusLayer* sl) {
         if (settings->HealthInfo == 4) {
             show_sleep = true;
         } else if (settings->HealthInfo == 1) {
-            show_sleep = weather_is_night();
+            // Last night's sleep in the morning, steps for the rest of the day
+            time_t now_t = time(NULL);
+            struct tm* lt = localtime(&now_t);
+            show_sleep = lt && rules_show_sleep(lt->tm_hour, settings->SleepUntilHour);
         }
         if (show_sleep) {
             if (state->health.sleep_seconds < 0) {

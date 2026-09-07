@@ -15,6 +15,7 @@ struct TimeLayer {
     Layer* root_layer;
     Layer* digit_layers[6];
     bool show_seconds;
+    bool leading_zero;
 };
 
 static void digit_update_proc(Layer* layer, GContext* ctx) {
@@ -51,6 +52,7 @@ TimeLayer* time_layer_create(GRect frame) {
     TimeLayer* tl = malloc(sizeof(TimeLayer));
     tl->root_layer = layer_create(frame);
     tl->show_seconds = false;
+    tl->leading_zero = true;
 
     init_digit(tl, 0, 41, layout_get_time_digit_rect(DIGIT_H1));
     init_digit(tl, 1, 41, layout_get_time_digit_rect(DIGIT_H2));
@@ -101,6 +103,13 @@ void time_layer_update(TimeLayer* tl, int hour, int minute, int second) {
             layer_mark_dirty(tl->digit_layers[i]);
         }
     }
+    layer_set_hidden(tl->digit_layers[0], !tl->leading_zero && h1 == 0);
+}
+
+void time_layer_set_leading_zero(TimeLayer* tl, bool leading_zero) {
+    tl->leading_zero = leading_zero;
+    DigitSlot* slot = (DigitSlot*)layer_get_data(tl->digit_layers[0]);
+    layer_set_hidden(tl->digit_layers[0], !leading_zero && slot->value == 0);
 }
 
 void time_layer_update_colors(TimeLayer* tl, GColor color) {

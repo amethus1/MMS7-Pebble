@@ -3,7 +3,8 @@
 
 #if defined(PBL_HEALTH)
 static void health_handler(HealthEventType event, void *context) {
-    if (event == HealthEventMovementUpdate || event == HealthEventSignificantUpdate) {
+    if (event == HealthEventMovementUpdate || event == HealthEventSignificantUpdate ||
+        event == HealthEventSleepUpdate) {
         health_update();
     }
 }
@@ -49,11 +50,13 @@ void health_update() {
         events_set_flag(EVENT_HEALTH_UPDATE);
     }
     
-    // Sleep
+    // Sleep: "last night" is summed explicitly from 18:00 yesterday, so it
+    // does not depend on which calendar day the firmware files a session under.
     HealthMetric sleep_metric = HealthMetricSleepSeconds;
-    HealthServiceAccessibilityMask sleep_mask = health_service_metric_accessible(sleep_metric, start, end);
+    time_t sleep_start = start - 6 * 3600;
+    HealthServiceAccessibilityMask sleep_mask = health_service_metric_accessible(sleep_metric, sleep_start, end);
     if(sleep_mask & HealthServiceAccessibilityMaskAvailable) {
-        state->health.sleep_seconds = health_service_sum_today(sleep_metric);
+        state->health.sleep_seconds = health_service_sum(sleep_metric, sleep_start, end);
         state->health.sleep_trend = 0;
         HealthServiceAccessibilityMask sleep_avg_mask = health_service_metric_averaged_accessible(sleep_metric, start, end, scope);
         if (sleep_avg_mask & HealthServiceAccessibilityMaskAvailable) {

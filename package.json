@@ -5,7 +5,7 @@
     "scripts": {
         "test": "./tests/run_tests.sh",
         "test:js": "node tests/check_message_keys.js && node tests/test_settings_js.js && node tests/test_weather_api_js.js",
-        "test:c": "cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_weather_formatting.c src/c/modules/weather_format.c -o /tmp/test_weather_formatting && /tmp/test_weather_formatting && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_weather.c tests/mock_pebble.c src/c/modules/weather.c src/c/state/state.c src/c/state/events.c -o /tmp/test_weather && /tmp/test_weather && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_battery.c tests/mock_pebble.c src/c/modules/battery.c src/c/state/state.c src/c/state/events.c -o /tmp/test_battery && /tmp/test_battery"
+        "test:c": "cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_weather_formatting.c src/c/modules/weather_format.c -o /tmp/test_weather_formatting && /tmp/test_weather_formatting && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_weather.c tests/mock_pebble.c src/c/modules/weather.c src/c/state/state.c src/c/state/events.c -o /tmp/test_weather && /tmp/test_weather && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_battery.c tests/mock_pebble.c src/c/modules/battery.c src/c/state/state.c src/c/state/events.c -o /tmp/test_battery && /tmp/test_battery && cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_rules.c src/c/modules/rules.c -o /tmp/test_rules && /tmp/test_rules"
     },
     "pebble": {
         "capabilities": [
@@ -78,7 +78,10 @@
             "hideBluetooth": 44,
             "FETCH_TRIGGER": 200,
             "KEY_WEATHER_FETCH_ERROR": 202,
-            "KEY_LOCATION_UNCONFIRMED": 203
+            "KEY_LOCATION_UNCONFIRMED": 203,
+            "KEY_SET_HIDE_BATTERY_TIME": 204,
+            "KEY_SET_LEADING_ZERO": 205,
+            "KEY_SET_SLEEP_UNTIL_HOUR": 206
         },
         "projectType": "native",
         "resources": {

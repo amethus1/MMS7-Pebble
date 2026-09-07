@@ -68,3 +68,6 @@
 #define KEY_DETECT_FIRST_START     201
 #define KEY_WEATHER_FETCH_ERROR    202  // value = reason, see weather_format.h
 #define KEY_LOCATION_UNCONFIRMED   203  // 1 when the weather is for a remembered position
+#define KEY_SET_HIDE_BATTERY_TIME  204  // 1 hides the time-since-charge under the battery
+#define KEY_SET_LEADING_ZERO       205  // 0 shows 8:30 instead of 08:30
+#define KEY_SET_SLEEP_UNTIL_HOUR   206  // Auto health mode shows sleep until this hour
