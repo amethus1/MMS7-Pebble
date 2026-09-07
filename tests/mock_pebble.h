@@ -48,7 +48,9 @@ typedef void (*BatteryStateHandler)(BatteryChargeState charge_state);
 #define APP_MSG_OK 0
 #define APP_LOG_LEVEL_ERROR 1
 #define APP_LOG_LEVEL_INFO 6
-#define APP_LOG(level, fmt, ...) ((void)0)
+#define APP_LOG_LEVEL_DEBUG 7
+#define APP_LOG_LEVEL_WARNING 4
+#define APP_LOG(level, ...) do { if (0) { (void)(level); printf(__VA_ARGS__); } } while (0)
 
 void persist_write_int(uint32_t key, int value);
 int persist_read_int(uint32_t key);
@@ -75,3 +77,6 @@ time_t time(time_t* tloc);
 #define assert_false(expr) do { if(expr) { printf("FAIL: !(%s) (%s:%d)\n", #expr, __FILE__, __LINE__); return 1; } } while(0)
 
 #define _(str) str
+
+// Feed tuples to dict_read_first/next (mock_pebble.c)
+void mock_dict_set(Tuple* tuples, int count);

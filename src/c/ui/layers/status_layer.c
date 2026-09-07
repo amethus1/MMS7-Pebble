@@ -464,7 +464,9 @@ void status_layer_update(StatusLayer* sl) {
             // status row when the user asks for it, otherwise on the left inset.
             bool centred = PBL_IF_ROUND_ELSE(true, settings->ExtraInfoCenter != 0);
             if (centred) {
-                int16_t total = icon.size.w + gap + size.w + gap + trend.size.w;
+                // The arrow layer draws nothing when there is no trend, so leave it out of the width
+                bool has_trend = state->health.trend_display != 0;
+                int16_t total = icon.size.w + gap + size.w + (has_trend ? gap + trend.size.w : 0);
                 int16_t x0 = layer_get_bounds(sl->root_layer).size.w / 2 - total / 2;
                 layer_set_frame(bitmap_layer_get_layer(sl->health_icon_layer), GRect(x0, icon.origin.y, icon.size.w, icon.size.h));
                 layer_set_frame(text_layer_get_layer(sl->health_text_layer), GRect(x0 + icon.size.w + gap, text.origin.y, size.w + 2, text.size.h));

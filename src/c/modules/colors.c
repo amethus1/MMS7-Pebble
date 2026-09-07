@@ -57,7 +57,7 @@ void colors_init(void) {
     .date = GColorBlack, .date_bg = GColorWhite,
     .weather = GColorBlack, .weather_bg = GColorWhite,
     .moon = GColorBlack, .moon_bg = GColorWhite,
-    .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
+    .sun = GColorOrange, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorBlack, .location_bg = GColorWhite,
     .last_update = GColorBlack, .last_update_bg = GColorWhite,
     .lines_bg = GColorDarkGray, .lines_minor = GColorDarkGray,

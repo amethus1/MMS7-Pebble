@@ -41,15 +41,27 @@ void battery_state_service_subscribe(BatteryStateHandler handler) {
 
 void battery_state_service_unsubscribe(void) {}
 
-// Dictionary iteration stubs
+// Dictionary iteration: tests hand in an array of tuples via mock_dict_set()
+static Tuple* s_mock_tuples = NULL;
+static int s_mock_tuple_count = 0;
+static int s_mock_tuple_index = 0;
+
+void mock_dict_set(Tuple* tuples, int count) {
+    s_mock_tuples = tuples;
+    s_mock_tuple_count = count;
+    s_mock_tuple_index = 0;
+}
+
 Tuple* dict_read_first(DictionaryIterator* iter) {
     (void)iter;
-    return NULL;
+    s_mock_tuple_index = 0;
+    return s_mock_tuple_count > 0 ? &s_mock_tuples[0] : NULL;
 }
 
 Tuple* dict_read_next(DictionaryIterator* iter) {
     (void)iter;
-    return NULL;
+    s_mock_tuple_index++;
+    return s_mock_tuple_index < s_mock_tuple_count ? &s_mock_tuples[s_mock_tuple_index] : NULL;
 }
 
 // Comm stubs

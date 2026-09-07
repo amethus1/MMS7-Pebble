@@ -77,6 +77,21 @@ walk(config);
   }
 });
 
+// Every setting key the phone can send must be handled on the watch; a
+// key that is only sent (or only persisted) silently does nothing.
+const settingsC = fs.readFileSync(path.join(__dirname, '..', 'src', 'c', 'state', 'settings.c'), 'utf8');
+Object.keys(pkgKeys).forEach((pkgKey) => {
+  const cKeyName = aliasToCKey[pkgKey] || pkgKey;
+  const isSetting = cKeyName.startsWith('KEY_SET_') || cKeyName.startsWith('KEY_HIDE_');
+  if (!isSetting) return;
+  if (!new RegExp(`case\\s+${cKeyName}\\s*:`).test(settingsC)) {
+    failures.push(`settings.c has no 'case ${cKeyName}:' - the watch would ignore this setting`);
+  }
+  if (!new RegExp(`persist_write_(int|string)\\(${cKeyName},`).test(settingsC)) {
+    failures.push(`settings.c never persists ${cKeyName} - the setting would be lost on restart`);
+  }
+});
+
 if (failures.length > 0) {
   console.error('KEY CONTRACT CHECK FAILED');
   failures.forEach((f) => console.error(`- ${f}`));

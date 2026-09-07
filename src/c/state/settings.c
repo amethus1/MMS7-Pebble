@@ -39,6 +39,7 @@ static void sanitize_settings(void) {
     s_settings.HideBatteryTime = clamp_int(s_settings.HideBatteryTime, 0, 1);
     s_settings.LeadingZero = clamp_int(s_settings.LeadingZero, 0, 1);
     s_settings.SleepUntilHour = clamp_int(s_settings.SleepUntilHour, 0, 23);
+    s_settings.ExtraInfoCenter = clamp_int(s_settings.ExtraInfoCenter, 0, 1);
 }
 
 GlobalSettings* settings_get_instance() {
@@ -77,6 +78,7 @@ void settings_load() {
   s_settings.HideBatteryTime = 0;
   s_settings.LeadingZero = 1;
   s_settings.SleepUntilHour = 10;
+  s_settings.ExtraInfoCenter = 0;
   s_settings.warning_color_location = 0;
 
   // Load from storage
@@ -109,6 +111,7 @@ void settings_load() {
   if (persist_exists(KEY_SET_HIDE_BATTERY_TIME)) s_settings.HideBatteryTime = persist_read_int(KEY_SET_HIDE_BATTERY_TIME);
   if (persist_exists(KEY_SET_LEADING_ZERO)) s_settings.LeadingZero = persist_read_int(KEY_SET_LEADING_ZERO);
   if (persist_exists(KEY_SET_SLEEP_UNTIL_HOUR)) s_settings.SleepUntilHour = persist_read_int(KEY_SET_SLEEP_UNTIL_HOUR);
+  if (persist_exists(KEY_SET_EXTRA_INFO_CENTER)) s_settings.ExtraInfoCenter = persist_read_int(KEY_SET_EXTRA_INFO_CENTER);
   
   if (persist_exists(KEY_DETECT_FIRST_START)) s_settings.AppFirstStart = persist_read_int(KEY_DETECT_FIRST_START);
   else s_settings.AppFirstStart = 1;
@@ -149,6 +152,7 @@ void settings_save() {
   persist_write_int(KEY_SET_HIDE_BATTERY_TIME, s_settings.HideBatteryTime);
   persist_write_int(KEY_SET_LEADING_ZERO, s_settings.LeadingZero);
   persist_write_int(KEY_SET_SLEEP_UNTIL_HOUR, s_settings.SleepUntilHour);
+  persist_write_int(KEY_SET_EXTRA_INFO_CENTER, s_settings.ExtraInfoCenter);
   
   persist_write_int(KEY_DETECT_FIRST_START, s_settings.AppFirstStart);
   persist_write_int(KEY_WARN_LOCATION, s_settings.warning_color_location);
@@ -287,6 +291,10 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         break;
       case KEY_SET_SLEEP_UNTIL_HOUR:
         s_settings.SleepUntilHour = tuple_to_int(t, s_settings.SleepUntilHour);
+        changed = true;
+        break;
+      case KEY_SET_EXTRA_INFO_CENTER:
+        s_settings.ExtraInfoCenter = tuple_to_int(t, s_settings.ExtraInfoCenter);
         changed = true;
         break;
       case KEY_DETECT_FIRST_START:
