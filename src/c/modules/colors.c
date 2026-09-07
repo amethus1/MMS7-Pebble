@@ -13,7 +13,7 @@ void colors_init(void) {
     .sun = GColorWhite, .connection = GColorWhite, .status_bg = GColorBlack,
     .location = GColorWhite, .location_bg = GColorBlack,
     .last_update = GColorWhite, .last_update_bg = GColorBlack,
-    .lines_bg = GColorWhite,
+    .lines_bg = GColorWhite, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorLightGray
   };
@@ -28,7 +28,7 @@ void colors_init(void) {
     .sun = GColorBlack, .connection = GColorBlack, .status_bg = GColorWhite,
     .location = GColorBlack, .location_bg = GColorWhite,
     .last_update = GColorBlack, .last_update_bg = GColorWhite,
-    .lines_bg = GColorBlack,
+    .lines_bg = GColorBlack, .lines_minor = GColorLightGray,
     .battery_text = GColorBlack, .battery_bg = GColorWhite,
     .battery_fill = GColorLightGray
   };
@@ -45,7 +45,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorWhite, .location_bg = GColorBlack,
     .last_update = GColorWhite, .last_update_bg = GColorBlack,
-    .lines_bg = GColorLightGray,
+    .lines_bg = GColorLightGray, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -60,7 +60,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorBlack, .location_bg = GColorWhite,
     .last_update = GColorBlack, .last_update_bg = GColorWhite,
-    .lines_bg = GColorDarkGray,
+    .lines_bg = GColorDarkGray, .lines_minor = GColorDarkGray,
     .battery_text = GColorBlack, .battery_bg = GColorWhite,
     .battery_fill = GColorKellyGreen
   };
@@ -75,7 +75,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorMelon, .location_bg = GColorDarkCandyAppleRed,
     .last_update = GColorRichBrilliantLavender, .last_update_bg = GColorJazzberryJam,
-    .lines_bg = GColorDarkCandyAppleRed,
+    .lines_bg = GColorDarkCandyAppleRed, .lines_minor = GColorDarkCandyAppleRed,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -90,7 +90,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorChromeYellow, .location_bg = GColorDarkGreen,
     .last_update = GColorWhite, .last_update_bg = GColorDarkGreen,
-    .lines_bg = GColorWhite,
+    .lines_bg = GColorWhite, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -105,7 +105,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorVividCerulean, .location_bg = GColorOxfordBlue,
     .last_update = GColorRichBrilliantLavender, .last_update_bg = GColorJazzberryJam,
-    .lines_bg = GColorDukeBlue,
+    .lines_bg = GColorDukeBlue, .lines_minor = GColorDukeBlue,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -120,7 +120,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorChromeYellow, .location_bg = GColorBulgarianRose,
     .last_update = GColorMelon, .last_update_bg = GColorBulgarianRose,
-    .lines_bg = GColorWhite,
+    .lines_bg = GColorWhite, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -135,7 +135,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorRichBrilliantLavender, .location_bg = GColorImperialPurple,
     .last_update = GColorWhite, .last_update_bg = GColorImperialPurple,
-    .lines_bg = GColorWhite,
+    .lines_bg = GColorWhite, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -150,7 +150,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorBlack, .status_bg = GColorRed,
     .location = GColorBlack, .location_bg = GColorRed,
     .last_update = GColorBlack, .last_update_bg = GColorRed,
-    .lines_bg = GColorBlack,
+    .lines_bg = GColorBlack, .lines_minor = GColorLightGray,
     .battery_text = GColorBlack, .battery_bg = GColorRed,
     .battery_fill = GColorKellyGreen
   };
@@ -165,7 +165,7 @@ void colors_init(void) {
     .sun = GColorBlack, .connection = GColorBlack, .status_bg = GColorGreen,
     .location = GColorBlack, .location_bg = GColorGreen,
     .last_update = GColorBlack, .last_update_bg = GColorGreen,
-    .lines_bg = GColorBlack,
+    .lines_bg = GColorBlack, .lines_minor = GColorLightGray,
     .battery_text = GColorBlack, .battery_bg = GColorGreen,
     .battery_fill = GColorWhite
   };
@@ -180,7 +180,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorBlack, .status_bg = GColorBlue,
     .location = GColorBlack, .location_bg = GColorBlue,
     .last_update = GColorBlack, .last_update_bg = GColorBlue,
-    .lines_bg = GColorBlack,
+    .lines_bg = GColorBlack, .lines_minor = GColorLightGray,
     .battery_text = GColorBlack, .battery_bg = GColorBlue,
     .battery_fill = GColorKellyGreen
   };
@@ -195,7 +195,7 @@ void colors_init(void) {
     .sun = GColorBlack, .connection = GColorBlack, .status_bg = GColorChromeYellow,
     .location = GColorBlack, .location_bg = GColorChromeYellow,
     .last_update = GColorBlack, .last_update_bg = GColorChromeYellow,
-    .lines_bg = GColorBlack,
+    .lines_bg = GColorBlack, .lines_minor = GColorLightGray,
     .battery_text = GColorBlack, .battery_bg = GColorChromeYellow,
     .battery_fill = GColorKellyGreen
   };
@@ -210,7 +210,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorWhite, .status_bg = GColorImperialPurple,
     .location = GColorWhite, .location_bg = GColorImperialPurple,
     .last_update = GColorWhite, .last_update_bg = GColorImperialPurple,
-    .lines_bg = GColorWhite,
+    .lines_bg = GColorWhite, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorImperialPurple,
     .battery_fill = GColorKellyGreen
   };
@@ -225,7 +225,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorChromeYellow, .location_bg = GColorDarkCandyAppleRed,
     .last_update = GColorRichBrilliantLavender, .last_update_bg = GColorJazzberryJam,
-    .lines_bg = GColorLightGray,
+    .lines_bg = GColorLightGray, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };
@@ -240,7 +240,7 @@ void colors_init(void) {
     .sun = GColorYellow, .connection = GColorVividCerulean, .status_bg = GColorBlack,
     .location = GColorWhite, .location_bg = GColorDarkGreen,
     .last_update = GColorWhite, .last_update_bg = GColorDarkGreen,
-    .lines_bg = GColorLightGray,
+    .lines_bg = GColorLightGray, .lines_minor = GColorDarkGray,
     .battery_text = GColorWhite, .battery_bg = GColorBlack,
     .battery_fill = GColorKellyGreen
   };

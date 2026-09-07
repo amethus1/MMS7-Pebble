@@ -32,21 +32,33 @@ static void update_proc(Layer* layer, GContext* ctx) {
     
     // Draw separator lines (optional)
     if (settings->ShowGridLines) {
-        graphics_context_set_stroke_color(ctx, scheme->lines_bg);
-
+#if defined(LAYOUT_REFINED_STATUS)
+        // Column dividers are quieter than the horizontal rules, and the
+        // date's own spacing separates it from the clock.
+        GColor minor = scheme->lines_minor;
+        bool draw_time_rule = false;
+#else
+        GColor minor = scheme->lines_bg;
+        bool draw_time_rule = true;
+#endif
+        graphics_context_set_stroke_color(ctx, minor);
         // Header split line on the right
         graphics_draw_line(ctx, GPoint(header_split_x, header_split_top_y), GPoint(header_split_x, header_y - 1));
-        // Header bottom
-        graphics_draw_line(ctx, GPoint(0, header_y), GPoint(bounds.size.w, header_y));
-        // Left column separators
+        // Column separators
         graphics_draw_line(ctx, GPoint(left_x, header_y + 1), GPoint(left_x, weather_y - 1));
         graphics_draw_line(ctx, GPoint(right_x, header_y + 1), GPoint(right_x, date_y - 1));
+
+        graphics_context_set_stroke_color(ctx, scheme->lines_bg);
+        // Header bottom
+        graphics_draw_line(ctx, GPoint(0, header_y), GPoint(bounds.size.w, header_y));
         // Weather info line
         graphics_draw_line(ctx, GPoint(0, weather_y), GPoint(right_x - 1, weather_y));
         // Date row
         graphics_draw_line(ctx, GPoint(0, date_y), GPoint(bounds.size.w, date_y));
         // Time row top
-        graphics_draw_line(ctx, GPoint(0, time_top_y), GPoint(bounds.size.w, time_top_y));
+        if (draw_time_rule) {
+            graphics_draw_line(ctx, GPoint(0, time_top_y), GPoint(bounds.size.w, time_top_y));
+        }
         // Footer separator
         graphics_draw_line(ctx, GPoint(0, footer_y), GPoint(bounds.size.w, footer_y));
     }

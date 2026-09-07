@@ -33,36 +33,37 @@ static struct {
 static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_ICON_DAY]    = { .origin = {10, 20},  .size = {46, 46} },
     [LAYOUT_WEATHER_ICON_MOON]   = { .origin = {10, 29},  .size = {46, 46} },
-    [LAYOUT_WEATHER_TEMP]        = { .origin = {119, 20}, .size = {72, 46} },
-    [LAYOUT_WEATHER_TEMP_DEGREE] = { .origin = {190, 24}, .size = {9, 20} },
+    [LAYOUT_WEATHER_TEMP]        = { .origin = {111, 20}, .size = {72, 46} },  // Number ends at 183, degree sign to ~192: 8px right margin
+    [LAYOUT_WEATHER_TEMP_DEGREE] = { .origin = {184, 24}, .size = {9, 20} },
     [LAYOUT_WEATHER_LOCATION]    = { .origin = {0, 0},    .size = {153, 22} },
     [LAYOUT_WEATHER_LAST_UPDATE] = { .origin = {154, 0},  .size = {46, 22} },
-    [LAYOUT_WEATHER_STRING1]     = { .origin = {119, 53}, .size = {78, 22} },
-    [LAYOUT_WEATHER_STRING2]     = { .origin = {119, 72}, .size = {78, 22} },
+    [LAYOUT_WEATHER_STRING1]     = { .origin = {114, 53}, .size = {78, 22} },  // Right-aligned to the same 8px margin
+    [LAYOUT_WEATHER_STRING2]     = { .origin = {114, 72}, .size = {78, 22} },
     [LAYOUT_WEATHER_STRING3]     = { .origin = {3, 71},   .size = {114, 22} },
-    [LAYOUT_DATE]                = { .origin = {0, 88},   .size = {200, 38} },
-    [LAYOUT_CW]                  = { .origin = {100, 183},.size = {90, 26} },
+    [LAYOUT_DATE]                = { .origin = {0, 92},   .size = {200, 38} },  // 6px under the rule, 5px above the digits
+    [LAYOUT_CW]                  = { .origin = {83, 181}, .size = {50, 22} },   // Fixed middle slot (centred text); seconds live to its right
     [LAYOUT_BATTERY_TEXT]        = { .origin = {72, 23},  .size = {41, 22} },
     [LAYOUT_BATTERY_TIME]        = { .origin = {67, 45},  .size = {50, 20} },
     [LAYOUT_BATTERY_BOX]         = { .origin = {71, 26},  .size = {44, 18} },
-    [LAYOUT_CONNECTION]          = { .origin = {65, 206}, .size = {70, 22} },
-    [LAYOUT_SUNRISE]             = { .origin = {10, 206}, .size = {70, 22} },
-    [LAYOUT_SUNSET]              = { .origin = {150, 206},.size = {46, 22} },  // Right-aligned, ends 4px from the edge
-    [LAYOUT_TIMEZONE]            = { .origin = {7, 179},  .size = {140, 27} },
-    [LAYOUT_HEALTH_ICON]         = { .origin = {0, 186},  .size = {21, 19} },
-    [LAYOUT_HEALTH_TEXT]         = { .origin = {33, 179}, .size = {140, 27} },
-    [LAYOUT_HEALTH_TREND]        = { .origin = {20, 190}, .size = {14, 14} },
-    [LAYOUT_COLON_TOP]           = { .origin = {96, 138}, .size = {10, 10} },
-    [LAYOUT_COLON_BOTTOM]        = { .origin = {96, 168}, .size = {10, 10} },
+    [LAYOUT_CONNECTION]          = { .origin = {95, 211}, .size = {10, 16} },  // Drawn Bluetooth glyph, centred on x=100
+    [LAYOUT_SUNRISE]             = { .origin = {12, 203}, .size = {60, 26} },  // Gothic 24; arrow at 8, text from 12: same margin as the clock
+    [LAYOUT_SUNSET]              = { .origin = {132, 203},.size = {60, 26} },  // Right-aligned, ends at 192
+    [LAYOUT_TIMEZONE]            = { .origin = {8, 181},  .size = {72, 22} },
+    [LAYOUT_HEALTH_ICON]         = { .origin = {8, 184},  .size = {15, 16} },
+    [LAYOUT_HEALTH_TEXT]         = { .origin = {26, 181}, .size = {56, 22} },  // Up to 5 digits; the trend arrow follows the measured text
+    [LAYOUT_HEALTH_TREND]        = { .origin = {72, 186}, .size = {10, 12} },
+    [LAYOUT_COLON_TOP]           = { .origin = {95, 135}, .size = {10, 10} },  // Centred on x=100, symmetric about the digit centre (y=153)
+    [LAYOUT_COLON_BOTTOM]        = { .origin = {95, 161}, .size = {10, 10} },
 };
 
 static const GRect s_digits[DIGIT_COUNT] = {
-    [DIGIT_H1] = { .origin = {5, 128},   .size = {36, 56} },
-    [DIGIT_H2] = { .origin = {51, 128},  .size = {36, 56} },
-    [DIGIT_M1] = { .origin = {114, 128}, .size = {36, 56} },
-    [DIGIT_M2] = { .origin = {160, 128}, .size = {36, 56} },
-    [DIGIT_S1] = { .origin = {158, 186}, .size = {14, 20} },
-    [DIGIT_S2] = { .origin = {177, 186}, .size = {14, 20} },
+    // 34x54 keeps the classic 26:41 digit proportion with 8px side margins
+    [DIGIT_H1] = { .origin = {8, 126},   .size = {34, 54} },
+    [DIGIT_H2] = { .origin = {52, 126},  .size = {34, 54} },
+    [DIGIT_M1] = { .origin = {114, 126}, .size = {34, 54} },
+    [DIGIT_M2] = { .origin = {158, 126}, .size = {34, 54} },
+    [DIGIT_S1] = { .origin = {159, 184}, .size = {14, 20} },  // Right of the CW slot, ending at the clock's right edge
+    [DIGIT_S2] = { .origin = {178, 184}, .size = {14, 20} },
 };
 
 static const int16_t s_lines[LINE_COUNT] = {
@@ -79,8 +80,8 @@ static const int16_t s_lines[LINE_COUNT] = {
 
 static const GRect s_batt_fill = { .origin = {73, 28}, .size = {0, 14} };
 
-static const int16_t s_sunrise_arrow_x = 4;
-static const int16_t s_sun_arrow_top_y = 213;
+static const int16_t s_sunrise_arrow_x = 8;
+static const int16_t s_sun_arrow_top_y = 212;
 static const int16_t s_sun_arrow_bottom_y = 224;
 
 #elif defined(PBL_PLATFORM_GABBRO)

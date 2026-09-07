@@ -28,7 +28,8 @@ typedef struct {
   GColor last_update;
   GColor last_update_bg;
   
-  GColor lines_bg;
+  GColor lines_bg;      // Major separators (horizontal rules)
+  GColor lines_minor;   // Internal column dividers on the refined layouts
   
   // Helpers for Battery colors
   GColor battery_text;

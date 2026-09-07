@@ -15,6 +15,9 @@ struct StatusLayer {
     TextLayer* battery_fill_layer;  // Same text, clipped to the charge bar and drawn inverted
     TextLayer* battery_time_layer;  // Time since the last charge, below it
     TextLayer* connection_layer;
+#if defined(LAYOUT_REFINED_STATUS)
+    Layer* bluetooth_layer;     // Drawn glyph instead of the word
+#endif
     TextLayer* sunrise_layer;
     TextLayer* sunset_layer;
     Layer* sun_arrows_layer;   // The up/down arrows, kept next to their times
@@ -41,7 +44,8 @@ struct StatusLayer {
 #define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_18_BOLD
 #define STATUS_SMALL_FONT FONT_KEY_GOTHIC_18
 // On Gabbro the timezone / health slot is in the bottom cap of the circle (~100px wide).
-#define STATUS_MEDIUM_FONT PBL_IF_ROUND_ELSE(FONT_KEY_GOTHIC_18, FONT_KEY_GOTHIC_24)
+#define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_18   // Supporting information under the clock
+#define STATUS_SUN_FONT PBL_IF_ROUND_ELSE(FONT_KEY_GOTHIC_18, FONT_KEY_GOTHIC_24)   // Sunrise / sunset times
 #elif defined(PBL_ROUND)
 // The timezone / health slot sits in the bottom cap of the circle, ~65px wide.
 #define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_14
@@ -53,6 +57,9 @@ struct StatusLayer {
 #define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_18
 #endif
 #define STATUS_BATTERY_TIME_FONT FONT_KEY_GOTHIC_14
+#ifndef STATUS_SUN_FONT
+#define STATUS_SUN_FONT STATUS_SMALL_FONT
+#endif
 
 // Gap between an arrow's stem and the first / last glyph of its time
 #define SUN_ARROW_GAP 4
@@ -84,7 +91,7 @@ static void status_layer_place_sun_arrows(StatusLayer* sl) {
     SunArrows* a = (SunArrows*)layer_get_data(sl->sun_arrows_layer);
     GRect rise = layout_get_rect(LAYOUT_SUNRISE);
     GRect set = layout_get_rect(LAYOUT_SUNSET);
-    GSize set_size = graphics_text_layout_get_content_size(sl->set_buf, fonts_get_system_font(STATUS_SMALL_FONT),
+    GSize set_size = graphics_text_layout_get_content_size(sl->set_buf, fonts_get_system_font(STATUS_SUN_FONT),
         GRect(0, 0, set.size.w, set.size.h), GTextOverflowModeTrailingEllipsis, GTextAlignmentRight);
     a->sunrise_x = rise.origin.x - SUN_ARROW_GAP;
     a->sunset_x = set.origin.x + set.size.w - set_size.w - SUN_ARROW_GAP;
@@ -92,6 +99,30 @@ static void status_layer_place_sun_arrows(StatusLayer* sl) {
     a->bottom_y = layout_get_sunrise_arrow_bottom().y;
     layer_mark_dirty(sl->sun_arrows_layer);
 }
+
+#if defined(LAYOUT_REFINED_STATUS)
+typedef struct {
+    GColor color;
+    bool connected;
+} BluetoothGlyph;
+
+// The Bluetooth rune, 9px wide and 15px tall, drawn with pixel-aligned lines
+// so it does not depend on any font. Disconnected: same rune, struck through.
+static void bluetooth_update_proc(Layer* layer, GContext* ctx) {
+    BluetoothGlyph* g = (BluetoothGlyph*)layer_get_data(layer);
+    GRect b = layer_get_bounds(layer);
+    int16_t x0 = b.origin.x, y0 = b.origin.y, cx = x0 + 4;
+    graphics_context_set_stroke_color(ctx, g->color);
+    graphics_draw_line(ctx, GPoint(cx, y0), GPoint(cx, y0 + 14));            // stem
+    graphics_draw_line(ctx, GPoint(cx, y0), GPoint(x0 + 8, y0 + 4));         // upper bow
+    graphics_draw_line(ctx, GPoint(x0 + 8, y0 + 4), GPoint(x0, y0 + 11));
+    graphics_draw_line(ctx, GPoint(cx, y0 + 14), GPoint(x0 + 8, y0 + 10));   // lower bow
+    graphics_draw_line(ctx, GPoint(x0 + 8, y0 + 10), GPoint(x0, y0 + 3));
+    if (!g->connected) {
+        graphics_draw_line(ctx, GPoint(x0 - 2, y0 + 15), GPoint(x0 + 10, y0 - 1));   // strike
+    }
+}
+#endif
 
 #if defined(PBL_HEALTH)
 static void health_trend_update_proc(Layer* layer, GContext* ctx) {
@@ -186,11 +217,18 @@ StatusLayer* status_layer_create(GRect frame) {
     sl->battery_time_layer = create_text_layer(layout_get_rect(LAYOUT_BATTERY_TIME), STATUS_BATTERY_TIME_FONT, GTextAlignmentCenter, GColorWhite);
 
     sl->connection_layer = create_text_layer(layout_get_rect(LAYOUT_CONNECTION), STATUS_SMALL_FONT, GTextAlignmentCenter, GColorWhite);
+#if defined(LAYOUT_REFINED_STATUS)
+    layer_set_hidden(text_layer_get_layer(sl->connection_layer), true);   // the glyph replaces the word
+    sl->bluetooth_layer = layer_create_with_data(layout_get_rect(LAYOUT_CONNECTION), sizeof(BluetoothGlyph));
+    *(BluetoothGlyph*)layer_get_data(sl->bluetooth_layer) = (BluetoothGlyph){ .color = GColorWhite, .connected = true };
+    layer_set_update_proc(sl->bluetooth_layer, bluetooth_update_proc);
+    layer_add_child(sl->root_layer, sl->bluetooth_layer);
+#endif
 
-    sl->sunrise_layer = create_text_layer(layout_get_rect(LAYOUT_SUNRISE), STATUS_SMALL_FONT, GTextAlignmentLeft, GColorWhite);
+    sl->sunrise_layer = create_text_layer(layout_get_rect(LAYOUT_SUNRISE), STATUS_SUN_FONT, GTextAlignmentLeft, GColorWhite);
 
     // Sunset is flush right so the row mirrors the sunrise on the left.
-    sl->sunset_layer = create_text_layer(layout_get_rect(LAYOUT_SUNSET), STATUS_SMALL_FONT, GTextAlignmentRight, GColorWhite);
+    sl->sunset_layer = create_text_layer(layout_get_rect(LAYOUT_SUNSET), STATUS_SUN_FONT, GTextAlignmentRight, GColorWhite);
     sl->timezone_layer = create_text_layer(layout_get_rect(LAYOUT_TIMEZONE), STATUS_MEDIUM_FONT,
                                            PBL_IF_ROUND_ELSE(GTextAlignmentCenter, GTextAlignmentLeft), GColorWhite);
     
@@ -232,6 +270,9 @@ void status_layer_destroy(StatusLayer* sl) {
     text_layer_destroy(sl->battery_fill_layer);
     text_layer_destroy(sl->battery_time_layer);
     text_layer_destroy(sl->connection_layer);
+#if defined(LAYOUT_REFINED_STATUS)
+    layer_destroy(sl->bluetooth_layer);
+#endif
     text_layer_destroy(sl->sunrise_layer);
     text_layer_destroy(sl->sunset_layer);
     layer_destroy(sl->sun_arrows_layer);
@@ -296,6 +337,14 @@ void status_layer_update(StatusLayer* sl) {
     } else {
         text_layer_set_text(sl->connection_layer, "---------");
     }
+#if defined(LAYOUT_REFINED_STATUS)
+    {
+        BluetoothGlyph* g = (BluetoothGlyph*)layer_get_data(sl->bluetooth_layer);
+        g->connected = state->connection.bluetooth_connected;
+        layer_set_hidden(sl->bluetooth_layer, settings->HideBluetooth && state->connection.bluetooth_connected);
+        layer_mark_dirty(sl->bluetooth_layer);
+    }
+#endif
     
     // Sunrise/Sunset - mask sentinel values
     bool is_24h = clock_is_24h_style();
@@ -390,6 +439,19 @@ void status_layer_update(StatusLayer* sl) {
             state->health.trend_display = state->health.steps_trend;
         }
         text_layer_set_text(sl->health_text_layer, sl->health_buf);
+#if defined(LAYOUT_REFINED_STATUS)
+        // Icon, value, arrow: the arrow follows the measured value so 8432 and
+        // 18432 both keep the same gap and never reach the calendar-week slot.
+        {
+            GRect text = layout_get_rect(LAYOUT_HEALTH_TEXT);
+            GRect trend = layout_get_rect(LAYOUT_HEALTH_TREND);
+            GSize size = graphics_text_layout_get_content_size(sl->health_buf, fonts_get_system_font(STATUS_MEDIUM_FONT),
+                GRect(0, 0, text.size.w, text.size.h), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
+            int16_t x = text.origin.x + size.w + 3;
+            if (x + trend.size.w > text.origin.x + text.size.w) x = text.origin.x + text.size.w - trend.size.w;
+            layer_set_frame(sl->health_trend_layer, GRect(x, trend.origin.y, trend.size.w, trend.size.h));
+        }
+#endif
         layer_mark_dirty(sl->health_trend_layer);
     }
 #endif
@@ -401,12 +463,15 @@ void status_layer_update_colors(StatusLayer* sl) {
     AppState* state = state_get_ptr();
     
     // Connection color: red if disconnected
-    if (!state->connection.bluetooth_connected) {
+    GColor connection_color = state->connection.bluetooth_connected
+        ? scheme->connection
         // Red vanishes on black-and-white screens; the dashes carry the message there
-        text_layer_set_text_color(sl->connection_layer, PBL_IF_COLOR_ELSE(GColorRed, scheme->connection));
-    } else {
-        text_layer_set_text_color(sl->connection_layer, scheme->connection);
-    }
+        : PBL_IF_COLOR_ELSE(GColorRed, scheme->connection);
+    text_layer_set_text_color(sl->connection_layer, connection_color);
+#if defined(LAYOUT_REFINED_STATUS)
+    ((BluetoothGlyph*)layer_get_data(sl->bluetooth_layer))->color = connection_color;
+    layer_mark_dirty(sl->bluetooth_layer);
+#endif
     
     text_layer_set_text_color(sl->sunrise_layer, scheme->sun);
     text_layer_set_text_color(sl->sunset_layer, scheme->sun);

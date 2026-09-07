@@ -32,7 +32,11 @@ DateLayer* date_layer_create(GRect frame) {
     // Calendar week
     dl->cw_layer = text_layer_create(layout_get_rect(LAYOUT_CW));
     text_layer_set_font(dl->cw_layer, fonts_get_system_font(DATE_CW_FONT));
-    text_layer_set_text_alignment(dl->cw_layer, PBL_IF_ROUND_ELSE(GTextAlignmentCenter, GTextAlignmentLeft));
+#if defined(PBL_ROUND) || defined(LAYOUT_REFINED_STATUS)
+    text_layer_set_text_alignment(dl->cw_layer, GTextAlignmentCenter);   // Fixed middle slot
+#else
+    text_layer_set_text_alignment(dl->cw_layer, GTextAlignmentLeft);
+#endif
     text_layer_set_background_color(dl->cw_layer, GColorClear);
     text_layer_set_text_color(dl->cw_layer, GColorWhite);
     layer_add_child(dl->root_layer, text_layer_get_layer(dl->cw_layer));
