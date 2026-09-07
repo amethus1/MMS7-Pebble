@@ -42,6 +42,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_STRING3]     = { .origin = {3, 71},   .size = {114, 22} },
     [LAYOUT_DATE]                = { .origin = {0, 92},   .size = {200, 38} },  // 6px under the rule, 5px above the digits
     [LAYOUT_CW]                  = { .origin = {83, 181}, .size = {50, 22} },   // Fixed middle slot (centred text); seconds live to its right
+    [LAYOUT_CW_LEFT]             = { .origin = {8, 181},  .size = {50, 22} },   // When the extra information is centred instead
     [LAYOUT_BATTERY_TEXT]        = { .origin = {72, 23},  .size = {41, 22} },
     [LAYOUT_BATTERY_TIME]        = { .origin = {67, 45},  .size = {50, 20} },
     [LAYOUT_BATTERY_BOX]         = { .origin = {71, 26},  .size = {44, 18} },

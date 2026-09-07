@@ -81,7 +81,8 @@
             "KEY_LOCATION_UNCONFIRMED": 203,
             "KEY_SET_HIDE_BATTERY_TIME": 204,
             "KEY_SET_LEADING_ZERO": 205,
-            "KEY_SET_SLEEP_UNTIL_HOUR": 206
+            "KEY_SET_SLEEP_UNTIL_HOUR": 206,
+            "KEY_SET_EXTRA_INFO_CENTER": 207
         },
         "projectType": "native",
         "resources": {

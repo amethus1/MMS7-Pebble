@@ -445,6 +445,14 @@ module.exports = [
                 ]
             },
             {
+                "type": "toggle",
+                "messageKey": "KEY_SET_EXTRA_INFO_CENTER",
+                "capabilities": ["PLATFORM_EMERY"],
+                "label": "Show it in the middle of the row",
+                "defaultValue": false,
+                "description": "The week number moves to the left; seconds stay on the right"
+            },
+            {
                 "type": "select",
                 "messageKey": "KEY_SET_SLEEP_UNTIL_HOUR",
                 "capabilities": ["HEALTH"],

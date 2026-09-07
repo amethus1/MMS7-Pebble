@@ -19,3 +19,5 @@ void date_layer_update_color(DateLayer* layer, GColor color);
 // Show/hide calendar week
 void date_layer_set_cw_visible(DateLayer* layer, bool visible);
 
+// Emery: put the week label in the left slot (true) or the middle slot (false)
+void date_layer_set_cw_left(DateLayer* dl, bool left);

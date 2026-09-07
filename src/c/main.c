@@ -271,6 +271,7 @@ static void update_colors_all() {
 static void update_all_ui() {
     update_colors_all();
     time_layer_set_leading_zero(s_time_layer, settings_get_instance()->LeadingZero != 0);
+    date_layer_set_cw_left(s_date_layer, settings_get_instance()->ExtraInfoCenter != 0);
     
     // Time
     time_t now = time(NULL);

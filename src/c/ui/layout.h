@@ -38,6 +38,7 @@ typedef enum {
     LAYOUT_WEATHER_STRING3,
     LAYOUT_DATE,
     LAYOUT_CW,
+    LAYOUT_CW_LEFT,   // Week label's slot when the extra information takes the middle (Emery)
     LAYOUT_BATTERY_TEXT,
     LAYOUT_BATTERY_TIME,
     LAYOUT_BATTERY_BOX,

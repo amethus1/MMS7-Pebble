@@ -408,6 +408,16 @@ void status_layer_update(StatusLayer* sl) {
         }
         }
         text_layer_set_text(sl->timezone_layer, sl->tz_buf);
+#if defined(LAYOUT_REFINED_STATUS) && !defined(PBL_ROUND)
+        {
+            GRect tz = layout_get_rect(LAYOUT_TIMEZONE);
+            bool centred = settings->ExtraInfoCenter != 0;
+            // Centred: span the row (the week has moved to the left slot; seconds stay right)
+            layer_set_frame(text_layer_get_layer(sl->timezone_layer),
+                            centred ? GRect(60, tz.origin.y, 80, tz.size.h) : tz);
+            text_layer_set_text_alignment(sl->timezone_layer, centred ? GTextAlignmentCenter : GTextAlignmentLeft);
+        }
+#endif
     }
 
 #if defined(PBL_HEALTH)
@@ -449,18 +459,23 @@ void status_layer_update(StatusLayer* sl) {
             GSize size = graphics_text_layout_get_content_size(sl->health_buf, fonts_get_system_font(STATUS_MEDIUM_FONT),
                 GRect(0, 0, text.size.w, text.size.h), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
             const int16_t gap = 3;
-#if defined(PBL_ROUND)
             GRect icon = layout_get_rect(LAYOUT_HEALTH_ICON);
-            int16_t total = icon.size.w + gap + size.w + gap + trend.size.w;
-            int16_t x0 = layer_get_bounds(sl->root_layer).size.w / 2 - total / 2;
-            layer_set_frame(bitmap_layer_get_layer(sl->health_icon_layer), GRect(x0, icon.origin.y, icon.size.w, icon.size.h));
-            layer_set_frame(text_layer_get_layer(sl->health_text_layer), GRect(x0 + icon.size.w + gap, text.origin.y, size.w + 2, text.size.h));
-            layer_set_frame(sl->health_trend_layer, GRect(x0 + icon.size.w + gap + size.w + gap, trend.origin.y, trend.size.w, trend.size.h));
-#else
-            int16_t x = text.origin.x + size.w + gap;
-            if (x + trend.size.w > text.origin.x + text.size.w) x = text.origin.x + text.size.w - trend.size.w;
-            layer_set_frame(sl->health_trend_layer, GRect(x, trend.origin.y, trend.size.w, trend.size.h));
-#endif
+            // Round: always centred in the bottom cap. Emery: centred in the
+            // status row when the user asks for it, otherwise on the left inset.
+            bool centred = PBL_IF_ROUND_ELSE(true, settings->ExtraInfoCenter != 0);
+            if (centred) {
+                int16_t total = icon.size.w + gap + size.w + gap + trend.size.w;
+                int16_t x0 = layer_get_bounds(sl->root_layer).size.w / 2 - total / 2;
+                layer_set_frame(bitmap_layer_get_layer(sl->health_icon_layer), GRect(x0, icon.origin.y, icon.size.w, icon.size.h));
+                layer_set_frame(text_layer_get_layer(sl->health_text_layer), GRect(x0 + icon.size.w + gap, text.origin.y, size.w + 2, text.size.h));
+                layer_set_frame(sl->health_trend_layer, GRect(x0 + icon.size.w + gap + size.w + gap, trend.origin.y, trend.size.w, trend.size.h));
+            } else {
+                layer_set_frame(bitmap_layer_get_layer(sl->health_icon_layer), icon);
+                layer_set_frame(text_layer_get_layer(sl->health_text_layer), text);
+                int16_t x = text.origin.x + size.w + gap;
+                if (x + trend.size.w > text.origin.x + text.size.w) x = text.origin.x + text.size.w - trend.size.w;
+                layer_set_frame(sl->health_trend_layer, GRect(x, trend.origin.y, trend.size.w, trend.size.h));
+            }
         }
 #endif
         layer_mark_dirty(sl->health_trend_layer);

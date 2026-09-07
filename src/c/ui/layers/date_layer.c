@@ -71,3 +71,12 @@ void date_layer_update_color(DateLayer* dl, GColor color) {
 void date_layer_set_cw_visible(DateLayer* dl, bool visible) {
     layer_set_hidden(text_layer_get_layer(dl->cw_layer), !visible);
 }
+
+void date_layer_set_cw_left(DateLayer* dl, bool left) {
+#if defined(LAYOUT_REFINED_STATUS) && !defined(PBL_ROUND)
+    layer_set_frame(text_layer_get_layer(dl->cw_layer), layout_get_rect(left ? LAYOUT_CW_LEFT : LAYOUT_CW));
+    text_layer_set_text_alignment(dl->cw_layer, left ? GTextAlignmentLeft : GTextAlignmentCenter);
+#else
+    (void)dl; (void)left;
+#endif
+}

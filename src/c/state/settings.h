@@ -46,6 +46,7 @@ typedef struct {
   int HideBatteryTime;   // 1 hides the time-since-charge under the battery
   int LeadingZero;       // 0 drops the leading zero of single-digit hours
   int SleepUntilHour;    // Auto health mode: sleep until this hour, steps after
+  int ExtraInfoCenter;   // Emery: timezone / health centred in the status row, week on the left
   
   // State
   int AppFirstStart;
