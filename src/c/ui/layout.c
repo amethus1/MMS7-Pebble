@@ -92,7 +92,7 @@ static const int16_t s_sun_arrow_bottom_y = 224;
 // scalable digits. The bottom cap is ~100px wide at the timezone baseline and
 // the top cap ~85px where the Bluetooth label sits.
 //
-//   y   0- 22  Bluetooth, centred in the top cap
+//   y   0- 22  Bluetooth glyph, centred in the top cap
 //   y  24- 46  location | last update
 //   y  48-113  icon + humidity/pressure | battery | temp, hi/lo, wind
 //   y 114-146  date
@@ -110,13 +110,13 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_STRING2]     = { .origin = {150, 95}, .size = {68, 22} },  // Wind
     [LAYOUT_WEATHER_STRING3]     = { .origin = {4, 93},   .size = {143, 22} }, // Humidity / pressure
     [LAYOUT_DATE]                = { .origin = {0, 113},  .size = {260, 32} },
-    [LAYOUT_CW]                  = { .origin = {100, 209},.size = {60, 22} },
+    [LAYOUT_CW]                  = { .origin = {100, 210},.size = {60, 22} },  // Baseline level with the Gothic 24 sun times
     [LAYOUT_BATTERY_TEXT]        = { .origin = {91, 51},  .size = {41, 22} },
     [LAYOUT_BATTERY_TIME]        = { .origin = {87, 73},  .size = {50, 20} },
     [LAYOUT_BATTERY_BOX]         = { .origin = {90, 54},  .size = {44, 18} },
-    [LAYOUT_CONNECTION]          = { .origin = {60, 3},   .size = {140, 22} },
-    [LAYOUT_SUNRISE]             = { .origin = {52, 209}, .size = {50, 22} },
-    [LAYOUT_SUNSET]              = { .origin = {162, 209},.size = {50, 22} },  // Right-aligned, mirrors the sunrise margin
+    [LAYOUT_CONNECTION]          = { .origin = {125, 5},  .size = {10, 16} },  // Drawn Bluetooth glyph, centred in the top cap
+    [LAYOUT_SUNRISE]             = { .origin = {48, 204}, .size = {58, 28} },  // Gothic 24; text 48..~102, arrow at 44
+    [LAYOUT_SUNSET]              = { .origin = {157, 204},.size = {58, 28} },  // Right-aligned, ends at 215 (chord at y=228 is 45..215)
     [LAYOUT_TIMEZONE]            = { .origin = {55, 233}, .size = {150, 22} },
     [LAYOUT_HEALTH_ICON]         = { .origin = {92, 237}, .size = {15, 14} },
     [LAYOUT_HEALTH_TEXT]         = { .origin = {111, 233},.size = {60, 22} },
@@ -126,12 +126,13 @@ static const GRect s_rects[LAYOUT_COUNT] = {
 };
 
 static const GRect s_digits[DIGIT_COUNT] = {
-    [DIGIT_H1] = { .origin = {35, 150},  .size = {36, 56} },
-    [DIGIT_H2] = { .origin = {81, 150},  .size = {36, 56} },
-    [DIGIT_M1] = { .origin = {144, 150}, .size = {36, 56} },
-    [DIGIT_M2] = { .origin = {190, 150}, .size = {36, 56} },
-    [DIGIT_S1] = { .origin = {114, 210}, .size = {14, 20} },  // Shares the CW slot
-    [DIGIT_S2] = { .origin = {133, 210}, .size = {14, 20} },
+    // 36x56 keeps the digit proportion; gaps 12 / 11 / 11 / 12 around the colon on x=130
+    [DIGIT_H1] = { .origin = {30, 150},  .size = {36, 56} },
+    [DIGIT_H2] = { .origin = {78, 150},  .size = {36, 56} },
+    [DIGIT_M1] = { .origin = {146, 150}, .size = {36, 56} },
+    [DIGIT_M2] = { .origin = {194, 150}, .size = {36, 56} },
+    [DIGIT_S1] = { .origin = {114, 209}, .size = {14, 20} },  // Shares the CW slot
+    [DIGIT_S2] = { .origin = {133, 209}, .size = {14, 20} },
 };
 
 static const int16_t s_lines[LINE_COUNT] = {
@@ -143,14 +144,14 @@ static const int16_t s_lines[LINE_COUNT] = {
     [LINE_WEATHER_Y]          = 93,   // Under icon + battery, above humidity/pressure
     [LINE_DATE_Y]             = 114,
     [LINE_TIME_TOP_Y]         = 147,
-    [LINE_FOOTER_Y]           = 232,
+    [LINE_FOOTER_Y]           = 231,
 };
 
 static const GRect s_batt_fill = { .origin = {92, 56}, .size = {0, 14} };
 
-static const int16_t s_sunrise_arrow_x = 48;
-static const int16_t s_sun_arrow_top_y = 216;
-static const int16_t s_sun_arrow_bottom_y = 227;
+static const int16_t s_sunrise_arrow_x = 44;
+static const int16_t s_sun_arrow_top_y = 213;
+static const int16_t s_sun_arrow_bottom_y = 226;
 
 #elif defined(PBL_ROUND)
 // ----------------------------------------------------------------------------

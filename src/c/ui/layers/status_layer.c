@@ -45,7 +45,7 @@ struct StatusLayer {
 #define STATUS_SMALL_FONT FONT_KEY_GOTHIC_18
 // On Gabbro the timezone / health slot is in the bottom cap of the circle (~100px wide).
 #define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_18   // Supporting information under the clock
-#define STATUS_SUN_FONT PBL_IF_ROUND_ELSE(FONT_KEY_GOTHIC_18, FONT_KEY_GOTHIC_24)   // Sunrise / sunset times
+#define STATUS_SUN_FONT FONT_KEY_GOTHIC_24   // Sunrise / sunset times, same on Emery and Gabbro
 #elif defined(PBL_ROUND)
 // The timezone / health slot sits in the bottom cap of the circle, ~65px wide.
 #define STATUS_BATTERY_FONT FONT_KEY_GOTHIC_14
@@ -440,16 +440,27 @@ void status_layer_update(StatusLayer* sl) {
         }
         text_layer_set_text(sl->health_text_layer, sl->health_buf);
 #if defined(LAYOUT_REFINED_STATUS)
-        // Icon, value, arrow: the arrow follows the measured value so 8432 and
-        // 18432 both keep the same gap and never reach the calendar-week slot.
+        // Icon, value, arrow measured as one group so 8432 and 18432 both keep
+        // the same gaps. Emery anchors it on the left inset; Gabbro centres it
+        // in the bottom cap.
         {
             GRect text = layout_get_rect(LAYOUT_HEALTH_TEXT);
             GRect trend = layout_get_rect(LAYOUT_HEALTH_TREND);
             GSize size = graphics_text_layout_get_content_size(sl->health_buf, fonts_get_system_font(STATUS_MEDIUM_FONT),
                 GRect(0, 0, text.size.w, text.size.h), GTextOverflowModeTrailingEllipsis, GTextAlignmentLeft);
-            int16_t x = text.origin.x + size.w + 3;
+            const int16_t gap = 3;
+#if defined(PBL_ROUND)
+            GRect icon = layout_get_rect(LAYOUT_HEALTH_ICON);
+            int16_t total = icon.size.w + gap + size.w + gap + trend.size.w;
+            int16_t x0 = layer_get_bounds(sl->root_layer).size.w / 2 - total / 2;
+            layer_set_frame(bitmap_layer_get_layer(sl->health_icon_layer), GRect(x0, icon.origin.y, icon.size.w, icon.size.h));
+            layer_set_frame(text_layer_get_layer(sl->health_text_layer), GRect(x0 + icon.size.w + gap, text.origin.y, size.w + 2, text.size.h));
+            layer_set_frame(sl->health_trend_layer, GRect(x0 + icon.size.w + gap + size.w + gap, trend.origin.y, trend.size.w, trend.size.h));
+#else
+            int16_t x = text.origin.x + size.w + gap;
             if (x + trend.size.w > text.origin.x + text.size.w) x = text.origin.x + text.size.w - trend.size.w;
             layer_set_frame(sl->health_trend_layer, GRect(x, trend.origin.y, trend.size.w, trend.size.h));
+#endif
         }
 #endif
         layer_mark_dirty(sl->health_trend_layer);

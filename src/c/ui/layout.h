@@ -17,8 +17,9 @@
 // Emery's refined layout: a drawn Bluetooth glyph instead of the word, a
 // two-tone grid without the rule above the clock, the calendar week in a
 // fixed middle slot, and the health trend arrow placed after the measured
-// step count. (Gabbro follows in a later pass.)
-#if defined(PBL_PLATFORM_EMERY)
+// step count (Emery) or the whole health group centred as one measured
+// unit (Gabbro).
+#if defined(PBL_PLATFORM_EMERY) || defined(PBL_PLATFORM_GABBRO)
 #define LAYOUT_REFINED_STATUS 1
 #endif
 
