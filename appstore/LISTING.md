@@ -18,8 +18,8 @@ separate listing** — the portal rejects duplicate UUIDs, and this one is free.
 | **Title** | `MSS Refreshed` |
 | **Type** | Watchface |
 | **Category** | Faces (automatic for watchfaces) |
-| **Website URL** | *(optional — leave blank or use the source repo)* |
-| **Source code URL** | **Required in practice**: the project is GPL-3.0 (inherited from MSS7), so the source must be available. Push this repo to GitHub/GitLab and paste the URL. |
+| **Website URL** | `https://github.com/amethus1/MMS7-Pebble` (optional) |
+| **Source code URL** | `https://github.com/amethus1/MMS7-Pebble` — required in practice: the project is GPL-3.0 (inherited from MSS7), so the source must be public. |
 | **Support email** | Defaults to your Rebble account email if left blank. |
 | **Developer name** | `Henry Miller` (from `package.json` → `author`) |
 
@@ -111,4 +111,4 @@ Collection* → **Publish** (or *Publish Privately* to test the listing first).
    `MSS Refreshed`; that is what appears in the watch's face list.
 3. **Credits.** The description and README credit FG's Multifunctional 7
    Segment as the original, per your decision.
-4. **Source URL.** Required for a GPL-3.0 derivative — publish the repo first.
+4. **Source URL.** `https://github.com/amethus1/MMS7-Pebble` — already public, paste it in.
