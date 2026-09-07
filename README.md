@@ -7,6 +7,15 @@ A highly configurable, information-rich Seven Segment watchface for Pebble Time,
 
 ![MSS Refreshed Banner](appstore/banner-720x320.png)
 
+## Download
+
+Grab the latest `.pbw` from the **[Releases page](https://github.com/amethus1/MMS7-Pebble/releases/latest)**:
+
+- `MSS-Refreshed-<version>.pbw` — for watches on current PebbleOS (4.32 or newer).
+- `MSS-Refreshed-<version>-sdk4.9.pbw` — the same face built with SDK 4.9, for watches still on older firmware.
+
+Open the file on your phone and it will install through the Pebble app. Works on Pebble Time / Time Steel, Time Round, Pebble 2, Pebble Time 2 and Pebble Round 2.
+
 ## Screenshots
 
 | Pebble Time (Basalt) | Pebble 2 (Diorite) | Pebble Time Round (Chalk) |
