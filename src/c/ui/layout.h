@@ -95,8 +95,7 @@ int16_t layout_get_line_coord(LineId id);
 // Get the battery fill rectangle. Width is 0..LAYOUT_BATTERY_FILL_MAX_W.
 GRect layout_get_battery_fill_rect(int16_t fill_width);
 
-// Get sun arrow points (sunrise/sunset indicators)
+// Sun arrow row: the sunrise arrow's x, and the top / bottom y shared by both
+// arrows. The sunset arrow's x is measured from its right-aligned text at runtime.
 GPoint layout_get_sunrise_arrow_top(void);
 GPoint layout_get_sunrise_arrow_bottom(void);
-GPoint layout_get_sunset_arrow_top(void);
-GPoint layout_get_sunset_arrow_bottom(void);

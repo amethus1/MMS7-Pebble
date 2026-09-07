@@ -17,6 +17,7 @@ struct StatusLayer {
     TextLayer* connection_layer;
     TextLayer* sunrise_layer;
     TextLayer* sunset_layer;
+    Layer* sun_arrows_layer;   // The up/down arrows, kept next to their times
     TextLayer* timezone_layer;
     // Text buffers (moved from function-static for memory safety)
     char batt_buf[24];
@@ -52,6 +53,45 @@ struct StatusLayer {
 #define STATUS_MEDIUM_FONT FONT_KEY_GOTHIC_18
 #endif
 #define STATUS_BATTERY_TIME_FONT FONT_KEY_GOTHIC_14
+
+// Gap between an arrow's stem and the first / last glyph of its time
+#define SUN_ARROW_GAP 4
+
+typedef struct {
+    int16_t sunrise_x;
+    int16_t sunset_x;
+    int16_t top_y;
+    int16_t bottom_y;
+    GColor color;
+} SunArrows;
+
+static void sun_arrows_update_proc(Layer* layer, GContext* ctx) {
+    SunArrows* a = (SunArrows*)layer_get_data(layer);
+    graphics_context_set_stroke_color(ctx, a->color);
+    // Sunrise: arrow pointing up
+    graphics_draw_line(ctx, GPoint(a->sunrise_x, a->top_y), GPoint(a->sunrise_x, a->bottom_y));
+    graphics_draw_line(ctx, GPoint(a->sunrise_x - 1, a->top_y + 1), GPoint(a->sunrise_x + 1, a->top_y + 1));
+    graphics_draw_line(ctx, GPoint(a->sunrise_x - 2, a->top_y + 2), GPoint(a->sunrise_x + 2, a->top_y + 2));
+    // Sunset: arrow pointing down
+    graphics_draw_line(ctx, GPoint(a->sunset_x, a->top_y), GPoint(a->sunset_x, a->bottom_y));
+    graphics_draw_line(ctx, GPoint(a->sunset_x - 1, a->bottom_y - 1), GPoint(a->sunset_x + 1, a->bottom_y - 1));
+    graphics_draw_line(ctx, GPoint(a->sunset_x - 2, a->bottom_y - 2), GPoint(a->sunset_x + 2, a->bottom_y - 2));
+}
+
+// The sunset time is right-aligned, so its arrow is placed from the measured
+// width of the text; the sunrise arrow sits a fixed gap before its left-aligned text.
+static void status_layer_place_sun_arrows(StatusLayer* sl) {
+    SunArrows* a = (SunArrows*)layer_get_data(sl->sun_arrows_layer);
+    GRect rise = layout_get_rect(LAYOUT_SUNRISE);
+    GRect set = layout_get_rect(LAYOUT_SUNSET);
+    GSize set_size = graphics_text_layout_get_content_size(sl->set_buf, fonts_get_system_font(STATUS_SMALL_FONT),
+        GRect(0, 0, set.size.w, set.size.h), GTextOverflowModeTrailingEllipsis, GTextAlignmentRight);
+    a->sunrise_x = rise.origin.x - SUN_ARROW_GAP;
+    a->sunset_x = set.origin.x + set.size.w - set_size.w - SUN_ARROW_GAP;
+    a->top_y = layout_get_sunrise_arrow_top().y;
+    a->bottom_y = layout_get_sunrise_arrow_bottom().y;
+    layer_mark_dirty(sl->sun_arrows_layer);
+}
 
 #if defined(PBL_HEALTH)
 static void health_trend_update_proc(Layer* layer, GContext* ctx) {
@@ -149,10 +189,17 @@ StatusLayer* status_layer_create(GRect frame) {
 
     sl->sunrise_layer = create_text_layer(layout_get_rect(LAYOUT_SUNRISE), STATUS_SMALL_FONT, GTextAlignmentLeft, GColorWhite);
 
-    sl->sunset_layer = create_text_layer(layout_get_rect(LAYOUT_SUNSET), STATUS_SMALL_FONT, GTextAlignmentLeft, GColorWhite);
+    // Sunset is flush right so the row mirrors the sunrise on the left.
+    sl->sunset_layer = create_text_layer(layout_get_rect(LAYOUT_SUNSET), STATUS_SMALL_FONT, GTextAlignmentRight, GColorWhite);
     sl->timezone_layer = create_text_layer(layout_get_rect(LAYOUT_TIMEZONE), STATUS_MEDIUM_FONT,
                                            PBL_IF_ROUND_ELSE(GTextAlignmentCenter, GTextAlignmentLeft), GColorWhite);
     
+    sl->sun_arrows_layer = layer_create_with_data(frame, sizeof(SunArrows));
+    SunArrows* arrows = (SunArrows*)layer_get_data(sl->sun_arrows_layer);
+    *arrows = (SunArrows){ .color = GColorWhite };
+    layer_set_update_proc(sl->sun_arrows_layer, sun_arrows_update_proc);
+    layer_add_child(sl->root_layer, sl->sun_arrows_layer);
+
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_fill_layer));
     layer_add_child(sl->root_layer, text_layer_get_layer(sl->battery_time_layer));
@@ -187,6 +234,7 @@ void status_layer_destroy(StatusLayer* sl) {
     text_layer_destroy(sl->connection_layer);
     text_layer_destroy(sl->sunrise_layer);
     text_layer_destroy(sl->sunset_layer);
+    layer_destroy(sl->sun_arrows_layer);
     text_layer_destroy(sl->timezone_layer);
 #if defined(PBL_HEALTH)
     text_layer_destroy(sl->health_text_layer);
@@ -268,6 +316,7 @@ void status_layer_update(StatusLayer* sl) {
     
     text_layer_set_text(sl->sunrise_layer, sl->rise_buf);
     text_layer_set_text(sl->sunset_layer, sl->set_buf);
+    status_layer_place_sun_arrows(sl);
     
     // Timezone or Health info
     // HealthInfo: 0=Off, 1=Steps/Sleep auto, 3=Steps, 4=Sleep, 5=Timezone
@@ -361,6 +410,8 @@ void status_layer_update_colors(StatusLayer* sl) {
     
     text_layer_set_text_color(sl->sunrise_layer, scheme->sun);
     text_layer_set_text_color(sl->sunset_layer, scheme->sun);
+    ((SunArrows*)layer_get_data(sl->sun_arrows_layer))->color = scheme->sun;
+    layer_mark_dirty(sl->sun_arrows_layer);
     text_layer_set_text_color(sl->timezone_layer, scheme->timezone);
 
     BatteryPalette battery_palette;

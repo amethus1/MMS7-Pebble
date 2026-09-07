@@ -56,21 +56,7 @@ static void update_proc(Layer* layer, GContext* ctx) {
     graphics_fill_rect(ctx, layout_get_rect(LAYOUT_COLON_TOP), 0, GCornerNone);
     graphics_fill_rect(ctx, layout_get_rect(LAYOUT_COLON_BOTTOM), 0, GCornerNone);
 
-    // Sunrise/Sunset arrows using layout API
-    GPoint sunrise_top = layout_get_sunrise_arrow_top();
-    GPoint sunrise_bot = layout_get_sunrise_arrow_bottom();
-    GPoint sunset_top = layout_get_sunset_arrow_top();
-    GPoint sunset_bot = layout_get_sunset_arrow_bottom();
-    
-    graphics_context_set_stroke_color(ctx, scheme->sun);
-    // Sunrise arrow (pointing up)
-    graphics_draw_line(ctx, sunrise_top, sunrise_bot);
-    graphics_draw_line(ctx, GPoint(sunrise_top.x - 1, sunrise_top.y + 1), GPoint(sunrise_top.x + 1, sunrise_top.y + 1));
-    graphics_draw_line(ctx, GPoint(sunrise_top.x - 2, sunrise_top.y + 2), GPoint(sunrise_top.x + 2, sunrise_top.y + 2));
-    // Sunset arrow (pointing down)
-    graphics_draw_line(ctx, sunset_top, sunset_bot);
-    graphics_draw_line(ctx, GPoint(sunset_bot.x - 1, sunset_bot.y - 1), GPoint(sunset_bot.x + 1, sunset_bot.y - 1));
-    graphics_draw_line(ctx, GPoint(sunset_bot.x - 2, sunset_bot.y - 2), GPoint(sunset_bot.x + 2, sunset_bot.y - 2));
+    // Sunrise / sunset arrows are drawn by the status layer, next to their times.
 
     BatteryPalette battery_palette;
     battery_style_get_palette(settings, state->battery.charge_percent, &battery_palette);

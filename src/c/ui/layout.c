@@ -47,7 +47,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_BATTERY_BOX]         = { .origin = {71, 26},  .size = {44, 18} },
     [LAYOUT_CONNECTION]          = { .origin = {65, 206}, .size = {70, 22} },
     [LAYOUT_SUNRISE]             = { .origin = {10, 206}, .size = {70, 22} },
-    [LAYOUT_SUNSET]              = { .origin = {152, 206},.size = {46, 22} },
+    [LAYOUT_SUNSET]              = { .origin = {150, 206},.size = {46, 22} },  // Right-aligned, ends 4px from the edge
     [LAYOUT_TIMEZONE]            = { .origin = {7, 179},  .size = {140, 27} },
     [LAYOUT_HEALTH_ICON]         = { .origin = {0, 186},  .size = {21, 19} },
     [LAYOUT_HEALTH_TEXT]         = { .origin = {33, 179}, .size = {140, 27} },
@@ -80,7 +80,6 @@ static const int16_t s_lines[LINE_COUNT] = {
 static const GRect s_batt_fill = { .origin = {73, 28}, .size = {0, 14} };
 
 static const int16_t s_sunrise_arrow_x = 4;
-static const int16_t s_sunset_arrow_x = 147;
 static const int16_t s_sun_arrow_top_y = 213;
 static const int16_t s_sun_arrow_bottom_y = 224;
 
@@ -116,7 +115,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_BATTERY_BOX]         = { .origin = {90, 54},  .size = {44, 18} },
     [LAYOUT_CONNECTION]          = { .origin = {60, 3},   .size = {140, 22} },
     [LAYOUT_SUNRISE]             = { .origin = {52, 209}, .size = {50, 22} },
-    [LAYOUT_SUNSET]              = { .origin = {164, 209},.size = {50, 22} },
+    [LAYOUT_SUNSET]              = { .origin = {162, 209},.size = {50, 22} },  // Right-aligned, mirrors the sunrise margin
     [LAYOUT_TIMEZONE]            = { .origin = {55, 233}, .size = {150, 22} },
     [LAYOUT_HEALTH_ICON]         = { .origin = {92, 237}, .size = {15, 14} },
     [LAYOUT_HEALTH_TEXT]         = { .origin = {111, 233},.size = {60, 22} },
@@ -149,7 +148,6 @@ static const int16_t s_lines[LINE_COUNT] = {
 static const GRect s_batt_fill = { .origin = {92, 56}, .size = {0, 14} };
 
 static const int16_t s_sunrise_arrow_x = 48;
-static const int16_t s_sunset_arrow_x = 160;
 static const int16_t s_sun_arrow_top_y = 216;
 static const int16_t s_sun_arrow_bottom_y = 227;
 
@@ -186,7 +184,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_BATTERY_BOX]         = { .origin = {58, 32},  .size = {42, 15} },  // Same size as the original MSS7 art
     [LAYOUT_CONNECTION]          = { .origin = {40, 0},   .size = {100, 16} },
     [LAYOUT_SUNRISE]             = { .origin = {38, 145}, .size = {34, 16} },
-    [LAYOUT_SUNSET]              = { .origin = {116, 145},.size = {34, 16} },
+    [LAYOUT_SUNSET]              = { .origin = {113, 145},.size = {33, 16} },  // Right-aligned, mirrors the sunrise margin
     [LAYOUT_TIMEZONE]            = { .origin = {45, 161}, .size = {90, 16} },
     [LAYOUT_HEALTH_ICON]         = { .origin = {62, 162}, .size = {15, 14} },
     [LAYOUT_HEALTH_TEXT]         = { .origin = {79, 161}, .size = {40, 16} },
@@ -219,7 +217,6 @@ static const int16_t s_lines[LINE_COUNT] = {
 static const GRect s_batt_fill = { .origin = {60, 34}, .size = {0, 11} };
 
 static const int16_t s_sunrise_arrow_x = 34;
-static const int16_t s_sunset_arrow_x = 112;
 static const int16_t s_sun_arrow_top_y = 150;
 static const int16_t s_sun_arrow_bottom_y = 158;
 
@@ -244,7 +241,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_BATTERY_BOX]         = { .origin = {43, 19},  .size = {42, 15} },  // Same size as the original MSS7 art
     [LAYOUT_CONNECTION]          = { .origin = {44, 152}, .size = {56, 20} },
     [LAYOUT_SUNRISE]             = { .origin = {7, 152},  .size = {50, 16} },
-    [LAYOUT_SUNSET]              = { .origin = {110, 152},.size = {33, 16} },
+    [LAYOUT_SUNSET]              = { .origin = {104, 152},.size = {37, 16} },  // Right-aligned, mirrors the sunrise margin
     [LAYOUT_TIMEZONE]            = { .origin = {5, 132},  .size = {100, 20} },
     [LAYOUT_HEALTH_ICON]         = { .origin = {0, 137},  .size = {15, 14} },
     [LAYOUT_HEALTH_TEXT]         = { .origin = {24, 132}, .size = {100, 20} },
@@ -277,7 +274,6 @@ static const int16_t s_lines[LINE_COUNT] = {
 static const GRect s_batt_fill = { .origin = {45, 21}, .size = {0, 11} };
 
 static const int16_t s_sunrise_arrow_x = 3;
-static const int16_t s_sunset_arrow_x = 106;
 static const int16_t s_sun_arrow_top_y = 157;
 static const int16_t s_sun_arrow_bottom_y = 165;
 #endif
@@ -343,10 +339,3 @@ GPoint layout_get_sunrise_arrow_bottom(void) {
     return GPoint(s_layout.origin_x + s_sunrise_arrow_x, s_layout.origin_y + s_sun_arrow_bottom_y);
 }
 
-GPoint layout_get_sunset_arrow_top(void) {
-    return GPoint(s_layout.origin_x + s_sunset_arrow_x, s_layout.origin_y + s_sun_arrow_top_y);
-}
-
-GPoint layout_get_sunset_arrow_bottom(void) {
-    return GPoint(s_layout.origin_x + s_sunset_arrow_x, s_layout.origin_y + s_sun_arrow_bottom_y);
-}
