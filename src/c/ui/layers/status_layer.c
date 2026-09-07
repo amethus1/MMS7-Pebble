@@ -319,11 +319,19 @@ void status_layer_update(StatusLayer* sl) {
             show_sleep = weather_is_night();
         }
         if (show_sleep) {
-            format_time_elapsed(sl->health_buf, sizeof(sl->health_buf), state->health.sleep_seconds);
+            if (state->health.sleep_seconds < 0) {
+                snprintf(sl->health_buf, sizeof(sl->health_buf), "--");   // no health data yet
+            } else {
+                format_time_elapsed(sl->health_buf, sizeof(sl->health_buf), state->health.sleep_seconds);
+            }
             bitmap_layer_set_bitmap(sl->health_icon_layer, sl->health_icon_sleep);
             state->health.trend_display = state->health.sleep_trend;
         } else {
-            snprintf(sl->health_buf, sizeof(sl->health_buf), "%d", state->health.steps);
+            if (state->health.steps < 0) {
+                snprintf(sl->health_buf, sizeof(sl->health_buf), "--");   // no health data yet
+            } else {
+                snprintf(sl->health_buf, sizeof(sl->health_buf), "%d", state->health.steps);
+            }
             bitmap_layer_set_bitmap(sl->health_icon_layer, sl->health_icon_steps);
             state->health.trend_display = state->health.steps_trend;
         }
@@ -340,7 +348,8 @@ void status_layer_update_colors(StatusLayer* sl) {
     
     // Connection color: red if disconnected
     if (!state->connection.bluetooth_connected) {
-        text_layer_set_text_color(sl->connection_layer, GColorRed);
+        // Red vanishes on black-and-white screens; the dashes carry the message there
+        text_layer_set_text_color(sl->connection_layer, PBL_IF_COLOR_ELSE(GColorRed, scheme->connection));
     } else {
         text_layer_set_text_color(sl->connection_layer, scheme->connection);
     }

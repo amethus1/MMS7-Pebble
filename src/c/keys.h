@@ -66,4 +66,5 @@
   
 #define KEY_FETCH_TRIGGER          200
 #define KEY_DETECT_FIRST_START     201
-#define KEY_WEATHER_FETCH_ERROR    202
+#define KEY_WEATHER_FETCH_ERROR    202  // value = reason, see weather_format.h
+#define KEY_LOCATION_UNCONFIRMED   203  // 1 when the weather is for a remembered position

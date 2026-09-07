@@ -34,6 +34,45 @@ static bool s_seconds_visible = false;
 static int s_seconds_timeout_counter = 0;
 static int s_last_display_seconds = -1;
 static bool s_light_on = false;
+static AppTimer *s_blink_timer = NULL;   // Drives the "Blinking" backlight mode
+
+// --- Backlight ---
+
+// The tick handler only runs once a minute unless seconds are shown, so the
+// blinking mode gets its own timer.
+static void blink_timer_cb(void *context) {
+    s_blink_timer = NULL;
+    GlobalSettings* settings = settings_get_instance();
+    if (settings->LightOn != 3) return;
+    s_light_on = !s_light_on;
+    light_enable(s_light_on);
+    s_blink_timer = app_timer_register(1000, blink_timer_cb, NULL);
+}
+
+static void apply_backlight_mode() {
+    GlobalSettings* settings = settings_get_instance();
+    AppState* app_state = state_get_ptr();
+
+    if (settings->LightOn == 3) {
+        if (!s_blink_timer) {
+            s_light_on = true;
+            light_enable(true);
+            s_blink_timer = app_timer_register(1000, blink_timer_cb, NULL);
+        }
+        return;
+    }
+    if (s_blink_timer) {
+        app_timer_cancel(s_blink_timer);
+        s_blink_timer = NULL;
+    }
+
+    bool want_on = (settings->LightOn == 2) ||
+                   (settings->LightOn == 1 && app_state->battery.is_charging);
+    if (want_on != s_light_on) {
+        s_light_on = want_on;
+        light_enable(want_on);
+    }
+}
 
 // --- Event Processing ---
 
@@ -261,6 +300,7 @@ static void process_events() {
         APP_LOG(APP_LOG_LEVEL_INFO, "Settings changed: DisplaySec=%d HealthInfo=%d", 
                 settings->DisplaySeconds, settings->HealthInfo);
         update_tick_timer_service();
+        apply_backlight_mode();
         update_all_ui(); 
     }
     
@@ -277,35 +317,9 @@ static void process_events() {
         time_layer_update(s_time_layer, hour, t->tm_min, t->tm_sec);
         
         GlobalSettings *settings = settings_get_instance();
-        AppState *app_state = state_get_ptr();
 
-        // Backlight behavior
-        if (settings->LightOn == 3) {
-            // Blinking (1 sec)
-            s_light_on = !s_light_on;
-            light_enable(s_light_on);
-        } else if (settings->LightOn == 2) {
-            // Always on
-            if (!s_light_on) {
-                s_light_on = true;
-                light_enable(true);
-            }
-        } else if (settings->LightOn == 1) {
-            // On when charging
-            if (app_state->battery.is_charging && !s_light_on) {
-                s_light_on = true;
-                light_enable(true);
-            } else if (!app_state->battery.is_charging && s_light_on) {
-                s_light_on = false;
-                light_enable(false);
-            }
-        } else {
-            // Off (Normal)
-            if (s_light_on) {
-                s_light_on = false;
-                light_enable(false);
-            }
-        }
+        // Backlight (blinking runs on its own timer, see apply_backlight_mode)
+        apply_backlight_mode();
 
         // Hourly vibration
         if (settings->vibe_on_hour && t->tm_min == 0 && t->tm_sec == 0) {
@@ -478,6 +492,11 @@ static void init() {
 }
 
 static void deinit() {
+    if (s_blink_timer) {
+        app_timer_cancel(s_blink_timer);
+        s_blink_timer = NULL;
+    }
+    light_enable(false);
     accel_tap_service_unsubscribe();
     window_destroy(s_main_window);
     

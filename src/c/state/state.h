@@ -16,6 +16,8 @@ typedef struct {
     bool is_night;
     bool is_stale;
     bool fetch_error;        // True if last weather fetch failed
+    int fetch_error_reason;  // WEATHER_ERROR_* from the phone, 0 when the last fetch succeeded
+    bool location_unconfirmed; // Weather is fresh but for the phone's last known position
     time_t last_update_time;     // When phone sent data to watch
     time_t station_data_time;    // When weather API recorded the data
     char location_name[BUFFER_SIZE_MEDIUM];
@@ -38,8 +40,8 @@ typedef struct {
 } BatteryState;
 
 typedef struct {
-    int steps;
-    time_t sleep_seconds;
+    int steps;         // -1 while the health service has no data
+    time_t sleep_seconds; // -1 while the health service has no data
     bool is_sleeping;
     int steps_trend;   // -1 below avg, 0 equal/unknown, 1 above avg
     int sleep_trend;   // -1 below avg, 0 equal/unknown, 1 above avg

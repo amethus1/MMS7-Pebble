@@ -45,7 +45,8 @@ var LAYOUT_GUIDE_HTML =
 var ABOUT_HTML =
     '<div style="font-size:0.9em;line-height:1.4">' +
     '<p><b>Battery.</b> The bar shows charge; the small time under it is how long since the watch was last unplugged (or, while charging, how long it has been on the charger). A * before the percentage means charging.</p>' +
-    '<p><b>Weather age.</b> The number in the top-right corner is how long ago the weather was fetched. The header turns yellow when the data is over two hours old and red when the last fetch failed; on black-and-white watches the header is inverted instead.</p>' +
+    '<p><b>Weather age.</b> The number in the top-right corner is how long ago the weather was fetched. A <b>!</b> in front of it means the last fetch failed and you are seeing older data; the header also turns yellow when the data is over two hours old and red after a failed fetch.</p>' +
+    '<p><b>~ before the city.</b> The phone could not get a GPS fix, so the weather is fresh but for the place the phone was last seen. If you have typed a city under Weather, it is used when there is no remembered position either.</p>' +
     '<p><b>Steps and the arrow.</b> With steps selected under Extra information, the arrow next to the count compares today with your recent daily average: up means ahead, down means behind.</p>' +
     '<p><b>Week number.</b> CW is the ISO calendar week. Fiscal week (WK) counts weeks from a start date you choose - useful if your work year does not start in January.</p>' +
     '<p><b>Seconds.</b> Showing seconds all the time costs battery. "On shake" shows them for a few seconds when you flick your wrist.</p>' +
@@ -251,8 +252,9 @@ module.exports = [
                 "messageKey": "default_loc",
                 "id": "city",
                 "label": "City",
-                "defaultValue": "Berlin",
-                "description": "Used when the phone's location is unavailable"
+                "defaultValue": "",
+                "attributes": { "placeholder": "e.g. Chicago" },
+                "description": "Optional. Used when the phone's location is unavailable"
             },
             {
                 "type": "select",

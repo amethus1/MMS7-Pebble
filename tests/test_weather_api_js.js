@@ -89,6 +89,71 @@ assert.strictEqual(
   'Payload should send the mapped night thunderstorm glyph'
 );
 
+assert.strictEqual(payload[keys.KEY_LOCATION_UNCONFIRMED], 0, 'A live location is confirmed');
+assert.strictEqual(
+  weatherApi.buildWeatherPayload(json, { name: 'X', lat: 1, lon: 2, unconfirmed: true }, keys, 1700001234)[keys.KEY_LOCATION_UNCONFIRMED],
+  1, 'A remembered location is flagged unconfirmed');
+
+// ---- fetchWeather flows, with the network and GPS stubbed ----
+const requests = [];
+let geocodeResults = [{ name: 'Chicago', latitude: 41.88, longitude: -87.63, country: 'US' }];
+let gpsFails = true;
+global.XMLHttpRequest = function () {
+  const xhr = this;
+  xhr.open = function (_m, url) { xhr.url = url; requests.push(url); };
+  xhr.send = function () {
+    let body;
+    if (xhr.url.indexOf('geocoding-api') >= 0) body = { results: geocodeResults };
+    else if (xhr.url.indexOf('nominatim') >= 0) body = { address: { city: 'Live City', country_code: 'us' } };
+    else body = json;
+    xhr.status = 200; xhr.responseText = JSON.stringify(body);
+    xhr.onload();
+  };
+};
+// Node exposes a read-only `navigator`; define our own over it.
+Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { geolocation: { getCurrentPosition(ok, fail) {
+  if (gpsFails) fail(new Error('denied')); else ok({ coords: { latitude: 10, longitude: 20 } });
+} } } });
+function runFetch(settings, lastLocation) {
+  const sent = []; const saved = [];
+  requests.length = 0;
+  weatherApi.fetchWeather({
+    settings, keys, log() {}, sendWeatherDict(d) { sent.push(d); },
+    lastLocation, saveLastLocation(l) { saved.push(l); }
+  });
+  return { sent, saved };
+}
+
+// GPS fails, a remembered position exists: fresh weather for it, flagged unconfirmed, city ignored
+let r = runFetch({ autodetect: true, location: 'Berlin', lang: 'en' }, { name: 'Chicago', lat: 41.88, lon: -87.63 });
+assert.strictEqual(r.sent.length, 1, 'One payload sent');
+assert.strictEqual(r.sent[0][keys.KEY_LOCATION_UNCONFIRMED], 1, 'Remembered position is flagged');
+assert.strictEqual(r.sent[0][keys.KEY_LOCATION_NAME], 'Chicago', 'Remembered name is used');
+assert.ok(requests.every(u => u.indexOf('geocoding-api') < 0), 'City is not looked up when a remembered position exists');
+assert.strictEqual(r.saved.length, 0, 'A remembered position is not re-saved');
+
+// GPS fails, nothing remembered, no city typed: a "no location" error, not Berlin
+r = runFetch({ autodetect: true, location: '', lang: 'en' }, null);
+assert.strictEqual(r.sent[0][keys.KEY_WEATHER_FETCH_ERROR], weatherApi.ERROR_NO_LOCATION, 'No silent fallback city');
+assert.strictEqual(requests.length, 0, 'Nothing is fetched without a location');
+
+// GPS fails, nothing remembered, city typed but unknown
+geocodeResults = [];
+r = runFetch({ autodetect: true, location: 'Nowhereville', lang: 'en' }, null);
+assert.strictEqual(r.sent[0][keys.KEY_WEATHER_FETCH_ERROR], weatherApi.ERROR_CITY_NOT_FOUND, 'Unknown city is reported as such');
+
+// GPS fails, nothing remembered, city typed and found: confirmed weather for the city
+geocodeResults = [{ name: 'Chicago', latitude: 41.88, longitude: -87.63, country: 'US' }];
+r = runFetch({ autodetect: true, location: 'Chicago', lang: 'en' }, null);
+assert.strictEqual(r.sent[0][keys.KEY_LOCATION_UNCONFIRMED], 0, 'A typed city is a confirmed location');
+
+// GPS works: the resolved position is remembered for next time
+gpsFails = false;
+r = runFetch({ autodetect: true, location: '', lang: 'en' }, null);
+assert.strictEqual(r.saved.length, 1, 'Live position is remembered');
+assert.strictEqual(r.saved[0].lat, 10, 'Remembered latitude comes from GPS');
+assert.strictEqual(r.sent[0][keys.KEY_LOCATION_UNCONFIRMED], 0, 'Live position is confirmed');
+
 const payloadWithoutName = weatherApi.buildWeatherPayload(json, { lat: 52.519444, lon: 13.406667 }, keys, 1700001234);
 assert.strictEqual(payloadWithoutName[keys.KEY_LOCATION_NAME], 'Local', 'Fallback location should be generic rather than a wrong city');
 

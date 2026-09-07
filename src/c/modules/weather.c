@@ -22,7 +22,7 @@ void weather_init() {
     AppState* state = state_get_ptr();
     
     // Set defaults with clear "no data" indicators
-    snprintf(state->weather.location_name, sizeof(state->weather.location_name), "...");
+    state->weather.location_name[0] = '\0';   // Rendered as "No weather" until data arrives
     state->weather.temp_c = -999;
     state->weather.temp_f = -999;
     state->weather.temp_high_c = -999;
@@ -35,6 +35,8 @@ void weather_init() {
     state->weather.station_data_time = 0;
     state->weather.is_stale = true;
     state->weather.fetch_error = false;
+    state->weather.fetch_error_reason = 0;
+    state->weather.location_unconfirmed = false;
     state->weather.timezone_name[0] = '\0';
     state->weather.timezone_utc_offset = 0;
     state->weather.conditions_buffer[0] = '\0';
@@ -95,6 +97,9 @@ void weather_init() {
     if (persist_exists(KEY_LOCATION_LON)) {
         state->weather.location_longitude = persist_read_int(KEY_LOCATION_LON);
     }
+    if (persist_exists(KEY_LOCATION_UNCONFIRMED)) {
+        state->weather.location_unconfirmed = persist_read_int(KEY_LOCATION_UNCONFIRMED) != 0;
+    }
 
     // Check staleness
     weather_check_staleness();
@@ -121,12 +126,14 @@ void weather_deinit() {
     persist_write_string(KEY_WEATHER_CONDITIONS, state->weather.conditions_buffer);
     persist_write_int(KEY_LOCATION_LAT, state->weather.location_latitude);
     persist_write_int(KEY_LOCATION_LON, state->weather.location_longitude);
+    persist_write_int(KEY_LOCATION_UNCONFIRMED, state->weather.location_unconfirmed ? 1 : 0);
 }
 
 bool weather_handle_app_message(DictionaryIterator *iterator) {
     AppState* state = state_get_ptr();
     bool changed = false;
     bool weather_payload_changed = false;
+    bool saw_unconfirmed_flag = false;
     Tuple *t = dict_read_first(iterator);
 
     while(t != NULL) {
@@ -230,8 +237,15 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
             case KEY_WEATHER_FETCH_ERROR:
                 if (t->value->int32 != 0) {
                     state->weather.fetch_error = true;
+                    state->weather.fetch_error_reason = t->value->int32;
                     changed = true;
                 }
+                break;
+            case KEY_LOCATION_UNCONFIRMED:
+                state->weather.location_unconfirmed = t->value->int32 != 0;
+                saw_unconfirmed_flag = true;
+                changed = true;
+                weather_payload_changed = true;
                 break;
         }
         t = dict_read_next(iterator);
@@ -241,6 +255,11 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
     if (weather_payload_changed) {
         state->weather.is_stale = false;
         state->weather.fetch_error = false;
+        state->weather.fetch_error_reason = 0;
+        // A payload from an older phone app carries no flag: the position is confirmed.
+        if (!saw_unconfirmed_flag) {
+            state->weather.location_unconfirmed = false;
+        }
     }
     
     return changed;

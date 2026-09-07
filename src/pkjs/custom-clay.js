@@ -61,7 +61,7 @@ module.exports = function (minified) {
             var $desc = city.$element.select('.description');
             if ($desc && $desc.set) {
                 $desc.set('innerHTML', gps
-                    ? 'Used when the phone\'s location is unavailable'
+                    ? 'Optional. Used when the phone\'s location is unavailable'
                     : 'Weather is fetched for this city');
             }
         } catch (e) {

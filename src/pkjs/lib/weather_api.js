@@ -1,6 +1,11 @@
 var s_fetch_in_flight = false;
 var s_fetch_watchdog = null;
 
+// Reasons sent with KEY_WEATHER_FETCH_ERROR; the watch words them differently.
+var ERROR_FETCH_FAILED = 1;     // Network / API problem; cached weather stays
+var ERROR_NO_LOCATION = 2;      // GPS unavailable and no city configured
+var ERROR_CITY_NOT_FOUND = 3;   // The configured city did not geocode
+
 // Mark a fetch as started. A watchdog guarantees the in-flight flag is cleared
 // even if a callback never fires (e.g. geolocation that never resolves), so
 // weather updates can never get permanently wedged.
@@ -211,16 +216,18 @@ function buildWeatherPayload(json, location, keys, nowUnix) {
     dict[keys.KEY_WEATHER_PRESSURE] = Math.round(Number(current.surface_pressure || 0));
     dict[keys.KEY_WEATHER_WIND_KMH] = Math.round(Number(current.wind_speed_10m || 0));
     dict[keys.KEY_WEATHER_CONDITIONS] = getWeatherDescription(weatherCode).substring(0, 31);
+    // Fresh weather, but for a remembered position rather than a live fix
+    dict[keys.KEY_LOCATION_UNCONFIRMED] = location.unconfirmed ? 1 : 0;
 
     return dict;
 }
 
-function sendFetchError(keys, sendWeatherDict, log) {
+function sendFetchError(keys, sendWeatherDict, log, reason) {
     endFetch();
     var dict = {};
-    dict[keys.KEY_WEATHER_FETCH_ERROR] = 1;
+    dict[keys.KEY_WEATHER_FETCH_ERROR] = reason || ERROR_FETCH_FAILED;
     sendWeatherDict(dict);
-    log('Sent fetch error to watch');
+    log('Sent fetch error ' + (reason || ERROR_FETCH_FAILED) + ' to watch');
 }
 
 function resolveCityLocation(city, lang, onSuccess, onError) {
@@ -229,7 +236,7 @@ function resolveCityLocation(city, lang, onSuccess, onError) {
 
     httpGetJson(url, function (json) {
         if (!json.results || !json.results.length) {
-            onError('No geocoding results');
+            onError('No geocoding results');  // matched by name in fetchWeather
             return;
         }
 
@@ -300,8 +307,10 @@ function fetchWeather(options) {
     var keys = options.keys;
     var log = options.log;
     var sendWeatherDict = options.sendWeatherDict;
+    var lastLocation = options.lastLocation || null;
+    var saveLastLocation = options.saveLastLocation || function () {};
     var lang = settings.lang || 'en';
-    var fallbackCity = (settings.location || '').trim() || 'Berlin';
+    var city = (settings.location || '').trim();
 
     if (s_fetch_in_flight) {
         log('Weather fetch already in flight, skipping duplicate request');
@@ -309,42 +318,63 @@ function fetchWeather(options) {
     }
     beginFetch();
 
-    if (settings.autodetect) {
-        navigator.geolocation.getCurrentPosition(
-            function (pos) {
-                reverseGeocodeLocation(pos.coords.latitude, pos.coords.longitude, function (location) {
-                    fetchForecast(location, keys, log, sendWeatherDict);
-                }, function () {
-                    fetchForecast({
-                        lat: pos.coords.latitude,
-                        lon: pos.coords.longitude,
-                        name: 'Local'
-                    }, keys, log, sendWeatherDict);
-                });
-            },
-            function () {
-                log('GPS error, falling back to city');
-                resolveCityLocation(fallbackCity, lang, function (location) {
-                    fetchForecast(location, keys, log, sendWeatherDict);
-                }, function (err) {
-                    log('City lookup failed: ' + err);
-                    sendFetchError(keys, sendWeatherDict, log);
-                });
-            },
-            { timeout: 15000, maximumAge: 60000 }
-        );
+    // The configured city is only ever used once the user has typed one.
+    function fetchForCity() {
+        if (!city) {
+            log('No location: GPS unavailable and no city configured');
+            sendFetchError(keys, sendWeatherDict, log, ERROR_NO_LOCATION);
+            return;
+        }
+        resolveCityLocation(city, lang, function (location) {
+            fetchForecast(location, keys, log, sendWeatherDict);
+        }, function (err) {
+            log('City lookup failed: ' + err);
+            var reason = (err === 'No geocoding results') ? ERROR_CITY_NOT_FOUND : ERROR_FETCH_FAILED;
+            sendFetchError(keys, sendWeatherDict, log, reason);
+        });
+    }
+
+    if (!settings.autodetect) {
+        fetchForCity();
         return;
     }
 
-    resolveCityLocation(fallbackCity, lang, function (location) {
-        fetchForecast(location, keys, log, sendWeatherDict);
-    }, function (err) {
-        log('City lookup failed: ' + err);
-        sendFetchError(keys, sendWeatherDict, log);
-    });
+    navigator.geolocation.getCurrentPosition(
+        function (pos) {
+            var lat = pos.coords.latitude;
+            var lon = pos.coords.longitude;
+            var onLocation = function (location) {
+                saveLastLocation(location);
+                fetchForecast(location, keys, log, sendWeatherDict);
+            };
+            reverseGeocodeLocation(lat, lon, onLocation, function () {
+                onLocation({ lat: lat, lon: lon, name: 'Local' });
+            });
+        },
+        function () {
+            // Prefer where the phone last was: the weather will be fresh, only
+            // the position is unconfirmed, and the watch marks it as such.
+            if (lastLocation) {
+                log('GPS unavailable, using last known location ' + lastLocation.name);
+                fetchForecast({
+                    lat: lastLocation.lat,
+                    lon: lastLocation.lon,
+                    name: lastLocation.name,
+                    unconfirmed: true
+                }, keys, log, sendWeatherDict);
+                return;
+            }
+            log('GPS unavailable and no last location, trying the configured city');
+            fetchForCity();
+        },
+        { timeout: 15000, maximumAge: 60000 }
+    );
 }
 
 module.exports = {
+    ERROR_FETCH_FAILED: ERROR_FETCH_FAILED,
+    ERROR_NO_LOCATION: ERROR_NO_LOCATION,
+    ERROR_CITY_NOT_FOUND: ERROR_CITY_NOT_FOUND,
     fetchWeather: fetchWeather,
     buildWeatherPayload: buildWeatherPayload,
     getWeatherIcon: getWeatherIcon,

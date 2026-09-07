@@ -25,6 +25,7 @@ struct WeatherLayer {
     char icon_buffer[2];
     char moon_buffer[2];
     char update_buffer[12];
+    char location_buffer[BUFFER_SIZE_MEDIUM + 2];
     char info_line_1[BUFFER_SIZE_MEDIUM];
     char info_line_2[BUFFER_SIZE_MEDIUM];
     char info_line_3[BUFFER_SIZE_MEDIUM];
@@ -81,6 +82,12 @@ static bool should_show_moon(const GlobalSettings* settings) {
 
 static void format_weather_info_line(char *buffer, size_t size, int label_index,
                                      const AppState *state, const GlobalSettings *settings) {
+    // Before the first weather arrives every metric is 0; show "--" rather
+    // than a plausible-looking zero.
+    if (!weather_has_data() && (label_index == 2 || label_index == 3 || label_index == 4)) {
+        snprintf(buffer, size, "--");
+        return;
+    }
     switch (label_index) {
         case 1:
             snprintf(buffer, size, "%s", state->weather.conditions_buffer);
@@ -235,12 +242,12 @@ void weather_layer_update_data(WeatherLayer* wl) {
         text_layer_set_text(wl->icon_layer, wl->icon_buffer);
     }
     
-    // Location
-    if (state->weather.location_name[0] != '\0') {
-        text_layer_set_text(wl->location_layer, state->weather.location_name);
-    } else {
-        text_layer_set_text(wl->location_layer, "");
-    }
+    // Location: "~Name" while unconfirmed, or what to do when there is none
+    weather_format_location(wl->location_buffer, sizeof(wl->location_buffer),
+                            state->weather.location_name,
+                            state->weather.location_unconfirmed,
+                            state->weather.fetch_error ? state->weather.fetch_error_reason : 0);
+    text_layer_set_text(wl->location_layer, wl->location_buffer);
     
     // Last Update Time - based on ShowTimeSinceStationData setting
     // 0 = time since phone update, 1 = time since weather data (API)
@@ -250,11 +257,14 @@ void weather_layer_update_data(WeatherLayer* wl) {
         ref_time = state->weather.station_data_time;
     }
     time_t elapsed = now - ref_time;
+    char elapsed_text[10];
     if (elapsed >= 0 && elapsed < TEN_YEARS_SECONDS) {
-        format_time_elapsed(wl->update_buffer, sizeof(wl->update_buffer), elapsed);
+        format_time_elapsed(elapsed_text, sizeof(elapsed_text), elapsed);
     } else {
-        snprintf(wl->update_buffer, sizeof(wl->update_buffer), "--:--");
+        snprintf(elapsed_text, sizeof(elapsed_text), "--:--");
     }
+    // "!" marks a failed fetch without relying on the banner colour
+    weather_format_age(wl->update_buffer, sizeof(wl->update_buffer), elapsed_text, state->weather.fetch_error);
     text_layer_set_text(wl->last_update_layer, wl->update_buffer);
     
     // Weather info lines are generated on-watch from raw weather metrics.

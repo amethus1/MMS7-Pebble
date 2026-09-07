@@ -26,7 +26,9 @@ function fetchWeather() {
         settings: settings.get(),
         keys: keys,
         log: log,
-        sendWeatherDict: sendWeather
+        sendWeatherDict: sendWeather,
+        lastLocation: settings.getLastLocation(),
+        saveLastLocation: function (location) { settings.saveLastLocation(location, log); }
     });
 }
 

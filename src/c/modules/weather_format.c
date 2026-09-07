@@ -57,3 +57,19 @@ void weather_format_hi_lo(char *buffer, size_t size, int high_c, int low_c, bool
 
     snprintf(buffer, size, "%d\xc2\xb0/%d\xc2\xb0", high_c, low_c);
 }
+
+void weather_format_location(char *buffer, size_t size, const char *name, bool unconfirmed, int error_reason) {
+    if (error_reason == WEATHER_ERROR_NO_LOCATION) {
+        snprintf(buffer, size, "%s", "Set a city");
+    } else if (error_reason == WEATHER_ERROR_CITY_NOT_FOUND) {
+        snprintf(buffer, size, "%s", "City not found");
+    } else if (!name || name[0] == '\0') {
+        snprintf(buffer, size, "%s", "No weather");
+    } else {
+        snprintf(buffer, size, "%s%s", unconfirmed ? "~" : "", name);
+    }
+}
+
+void weather_format_age(char *buffer, size_t size, const char *elapsed, bool fetch_failed) {
+    snprintf(buffer, size, "%s%s", fetch_failed ? "!" : "", elapsed ? elapsed : "");
+}

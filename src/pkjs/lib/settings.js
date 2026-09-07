@@ -1,8 +1,9 @@
 var SETTINGS_STORAGE_KEY = 'mss-js-settings-v2';
 var SETTINGS_MIGRATION_KEY = 'mss-settings-migrated-v2';
+var LAST_LOCATION_KEY = 'mss-last-location';
 
 var s_settings = {
-    location: 'Berlin',
+    location: '',   // A city is only used once the user has typed one
     autodetect: true,
     lang: 'en'
 };
@@ -161,6 +162,39 @@ function migrateLegacyUnitSettings(keys, sendFn, log) {
     }
 }
 
+// The last location the phone actually resolved (GPS + reverse geocode).
+// Used for weather when GPS is unavailable, flagged as unconfirmed.
+function getLastLocation() {
+    try {
+        var raw = localStorage.getItem(LAST_LOCATION_KEY);
+        if (!raw) return null;
+        var parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed.lat !== 'number' || typeof parsed.lon !== 'number') return null;
+        return {
+            name: String(parsed.name || 'Local'),
+            lat: parsed.lat,
+            lon: parsed.lon,
+            at: Number(parsed.at || 0)
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
+function saveLastLocation(location, log) {
+    if (!location || typeof location.lat !== 'number' || typeof location.lon !== 'number') return;
+    try {
+        localStorage.setItem(LAST_LOCATION_KEY, JSON.stringify({
+            name: String(location.name || 'Local'),
+            lat: location.lat,
+            lon: location.lon,
+            at: Math.floor(Date.now() / 1000)
+        }));
+    } catch (e) {
+        if (log) log('Save last location error: ' + e);
+    }
+}
+
 function get() {
     return {
         location: s_settings.location,
@@ -175,5 +209,7 @@ module.exports = {
     save: save,
     applyJsOnlySettings: applyJsOnlySettings,
     migrateLegacyUnitSettings: migrateLegacyUnitSettings,
+    getLastLocation: getLastLocation,
+    saveLastLocation: saveLastLocation,
     get: get
 };

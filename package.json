@@ -77,7 +77,8 @@
             "hideCW": 43,
             "hideBluetooth": 44,
             "FETCH_TRIGGER": 200,
-            "KEY_WEATHER_FETCH_ERROR": 202
+            "KEY_WEATHER_FETCH_ERROR": 202,
+            "KEY_LOCATION_UNCONFIRMED": 203
         },
         "projectType": "native",
         "resources": {

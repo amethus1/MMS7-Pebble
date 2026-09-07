@@ -62,4 +62,13 @@ assert.strictEqual(current.location, 'Boston', 'Location should update');
 assert.strictEqual(current.autodetect, false, 'Autodetect should update');
 assert.strictEqual(current.lang, 'de', 'Language should update');
 
+assert.strictEqual(settings.getLastLocation(), null, 'No last location until one is saved');
+settings.saveLastLocation({ name: 'Chicago', lat: 41.88, lon: -87.63 }, log);
+const last = settings.getLastLocation();
+assert.strictEqual(last.name, 'Chicago', 'Last location name round-trips');
+assert.strictEqual(last.lat, 41.88, 'Last location latitude round-trips');
+assert.ok(last.at > 0, 'Last location records when it was saved');
+settings.saveLastLocation({ name: 'bad' }, log);
+assert.strictEqual(settings.getLastLocation().name, 'Chicago', 'Invalid locations are ignored');
+
 console.log('ALL TESTS PASSED');

@@ -43,6 +43,10 @@ void health_update() {
             else if (state->health.steps < (int)avg) state->health.steps_trend = -1;
         }
         events_set_flag(EVENT_HEALTH_UPDATE);
+    } else {
+        state->health.steps = -1;   // Distinguish "no data" from a genuine zero
+        state->health.steps_trend = 0;
+        events_set_flag(EVENT_HEALTH_UPDATE);
     }
     
     // Sleep
@@ -57,6 +61,9 @@ void health_update() {
             if (state->health.sleep_seconds > (time_t)avg) state->health.sleep_trend = 1;
             else if (state->health.sleep_seconds < (time_t)avg) state->health.sleep_trend = -1;
         }
+    } else {
+        state->health.sleep_seconds = -1;
+        state->health.sleep_trend = 0;
     }
     #endif
 }

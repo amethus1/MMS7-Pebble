@@ -60,6 +60,24 @@ int main(void) {
     assert_int_equals("c_to_f -10", c_to_f_rounded(-10), 14);
     assert_int_equals("c_to_f -40", c_to_f_rounded(-40), -40);
 
+    weather_format_location(buffer, sizeof(buffer), "Chicago", false, 0);
+    assert_equals("location plain", buffer, "Chicago");
+    weather_format_location(buffer, sizeof(buffer), "Chicago", true, 0);
+    assert_equals("location unconfirmed", buffer, "~Chicago");
+    weather_format_location(buffer, sizeof(buffer), "Chicago", false, WEATHER_ERROR_FETCH_FAILED);
+    assert_equals("location keeps name on fetch failure", buffer, "Chicago");
+    weather_format_location(buffer, sizeof(buffer), "Chicago", false, WEATHER_ERROR_NO_LOCATION);
+    assert_equals("location no location", buffer, "Set a city");
+    weather_format_location(buffer, sizeof(buffer), "Chicago", false, WEATHER_ERROR_CITY_NOT_FOUND);
+    assert_equals("location city not found", buffer, "City not found");
+    weather_format_location(buffer, sizeof(buffer), "", false, 0);
+    assert_equals("location empty", buffer, "No weather");
+
+    weather_format_age(buffer, sizeof(buffer), "12 m", false);
+    assert_equals("age ok", buffer, "12 m");
+    weather_format_age(buffer, sizeof(buffer), "12 m", true);
+    assert_equals("age after failed fetch", buffer, "!12 m");
+
     if (s_failures == 0) {
         printf("ALL TESTS PASSED\n");
         return 0;
