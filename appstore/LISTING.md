@@ -88,7 +88,7 @@ MSS Refreshed 17.0 — first release.
 
 ## 4. Version
 
-The `.pbw` reports **17.0.0** (from `package.json` → `version`). Every later
+The `.pbw` reports **17.1.0** (from `package.json` → `version`). Every later
 upload to this listing must carry a higher version — bump `"version"` in
 `package.json` and run `pebble build` before each new release.
 
