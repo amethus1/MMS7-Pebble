@@ -20,9 +20,9 @@ Open the file on your phone and it will install through the Pebble app. Works on
 
 | Pebble Time (Basalt) | Pebble 2 (Diorite) | Pebble Time Round (Chalk) |
 | :---: | :---: | :---: |
-| ![Basalt Day](appstore/screenshots/basalt/1-day.png) | ![Diorite Day](appstore/screenshots/diorite/1-day.png) | ![Chalk Day](appstore/screenshots/chalk/1-day.png) |
+| ![Basalt Day](appstore/screenshots/basalt/1-day.png) | ![Diorite Day](appstore/screenshots/diorite/1-day.png) | ![Chalk Day](docs/screenshots/chalk-1-day.png) |
 | **Pebble Time 2 (Emery)** | **Pebble Round 2 (Gabbro)** | **Night / Health Mode** |
-| ![Emery Day](appstore/screenshots/emery/1-day.png) | ![Gabbro Day](appstore/screenshots/gabbro/1-day.png) | ![Basalt Night](appstore/screenshots/basalt/2-night-steps.png) |
+| ![Emery Day](appstore/screenshots/emery/1-day.png) | ![Gabbro Day](docs/screenshots/gabbro-1-day.png) | ![Basalt Night](appstore/screenshots/basalt/2-night-steps.png) |
 
 ## Overview
 
