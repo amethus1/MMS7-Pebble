@@ -30,23 +30,16 @@ var COLOR_SCHEME_OPTIONS = [
     { "label": "Colourful, white clock", "value": 15 }
 ];
 
-// The weather-detail layout, drawn as a small table so the four slot names
-// below map onto the face without guesswork.
+// The weather-detail layout: a crop of the real face with the four slots
+// marked, so the numbered choices below map onto the watch without guesswork.
+var LAYOUT_GUIDE_IMG = 'data:image/png;base64,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';
 var LAYOUT_GUIDE_HTML =
-    '<div style="font-size:0.85em;line-height:1.35">' +
-    'The area under the location line has three columns. Pick what goes in each slot:' +
-    '<table style="width:100%;margin-top:6px;border-collapse:collapse;text-align:center;font-family:monospace;font-size:0.9em">' +
-    '<tr>' +
-      '<td style="border:1px solid #888;padding:4px">weather<br>icon</td>' +
-      '<td style="border:1px solid #888;padding:4px">battery</td>' +
-      '<td style="border:1px solid #888;padding:4px">temperature<br><b>Right column, top</b><br><b>Right column, bottom</b></td>' +
-    '</tr>' +
-    '<tr>' +
-      '<td colspan="2" style="border:1px solid #888;padding:4px"><b>Left line, first</b> / <b>Left line, second</b></td>' +
-      '<td style="border:1px solid #888;padding:4px">&nbsp;</td>' +
-    '</tr>' +
-    '</table>' +
-    'The two left values share one line, separated by a slash.' +
+    '<div style="font-size:0.9em;line-height:1.4">' +
+    'Three spots in the weather area show extra values you choose:' +
+    '<img src="' + LAYOUT_GUIDE_IMG + '" alt="" style="display:block;width:100%;max-width:360px;margin:8px auto 6px">' +
+    '<b>1</b> and <b>2</b> are the two lines under the temperature. ' +
+    '<b>3</b> is the line under the weather icon; it holds two values side by side, ' +
+    'shown as <i>first / second</i>.' +
     '</div>';
 
 var ABOUT_HTML =
@@ -335,28 +328,28 @@ module.exports = [
             {
                 "type": "select",
                 "messageKey": "KEY_SET_LABEL_INDEX_1",
-                "label": "Right column, top",
+                "label": "1 - Right column, top",
                 "defaultValue": 5,
                 "options": WEATHER_DETAIL_OPTIONS
             },
             {
                 "type": "select",
                 "messageKey": "KEY_SET_LABEL_INDEX_2",
-                "label": "Right column, bottom",
+                "label": "2 - Right column, bottom",
                 "defaultValue": 2,
                 "options": WEATHER_DETAIL_OPTIONS
             },
             {
                 "type": "select",
                 "messageKey": "KEY_SET_LABEL_INDEX_3",
-                "label": "Left line, first",
+                "label": "3 - Left line, first",
                 "defaultValue": 3,
                 "options": WEATHER_DETAIL_OPTIONS
             },
             {
                 "type": "select",
                 "messageKey": "KEY_SET_LABEL_INDEX_4",
-                "label": "Left line, second",
+                "label": "3 - Left line, second",
                 "defaultValue": 4,
                 "options": WEATHER_DETAIL_OPTIONS
             }
