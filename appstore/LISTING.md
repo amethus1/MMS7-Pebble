@@ -53,10 +53,10 @@ source is published so anyone can check or improve it.
 
 ## 3. Release notes
 
-For the current release (17.2.0) the notes are:
+For the current release (17.3.0) the notes are:
 
 ```
-MSS Refreshed 17.2.0
+MSS Refreshed 17.3.0
 
 • Settings page reorganised: options only appear when relevant, one clear
   week-number choice, Classic and Clean presets with previews, reset button,
@@ -72,6 +72,10 @@ MSS Refreshed 17.2.0
 • Blinking backlight really blinks once a second now
 • 17.2.0: presets no longer touch your city, units or alerts; sleep total
   comes from the night's actual sleep sessions
+• 17.3.0: refined Pebble Time 2 and Round 2 faces - even clock margins, a
+  quieter grid, a drawn Bluetooth symbol, larger sunrise/sunset times, the
+  week label in a fixed slot, and an option on Time 2 to centre the
+  timezone / steps under the clock
 ```
 
 ### First release (17.0) notes, for reference
@@ -90,7 +94,7 @@ MSS Refreshed 17.0 — first release.
 
 ## 4. Version
 
-The `.pbw` reports **17.2.0** (from `package.json` → `version`). Every later
+The `.pbw` reports **17.3.0** (from `package.json` → `version`). Every later
 upload to this listing must carry a higher version — bump `"version"` in
 `package.json` and run `pebble build` before each new release.
 
