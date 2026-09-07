@@ -181,7 +181,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_STRING3]     = { .origin = {6, 62},   .size = {97, 16} },  // Humidity / pressure
     [LAYOUT_DATE]                = { .origin = {0, 75},   .size = {180, 26} },
     [LAYOUT_CW]                  = { .origin = {70, 145}, .size = {40, 16} },
-    [LAYOUT_BATTERY_TEXT]        = { .origin = {58, 32},  .size = {42, 14} },  // Percentage inside the outline
+    [LAYOUT_BATTERY_TEXT]        = { .origin = {58, 30},  .size = {42, 14} },  // Percentage inside the outline (Gothic 14 glyphs land 2px below the rect top)
     [LAYOUT_BATTERY_TIME]        = { .origin = {56, 47},  .size = {47, 16} },  // Time since last charge
     [LAYOUT_BATTERY_BOX]         = { .origin = {58, 32},  .size = {42, 15} },  // Same size as the original MSS7 art
     [LAYOUT_CONNECTION]          = { .origin = {40, 0},   .size = {100, 16} },
@@ -239,7 +239,7 @@ static const GRect s_rects[LAYOUT_COUNT] = {
     [LAYOUT_WEATHER_STRING3]     = { .origin = {1, 50},   .size = {87, 14} },  // Left row 1 + row 2 (combined)
     [LAYOUT_DATE]                = { .origin = {0, 63},   .size = {144, 30} },
     [LAYOUT_CW]                  = { .origin = {72, 135}, .size = {64, 20} },
-    [LAYOUT_BATTERY_TEXT]        = { .origin = {43, 19},  .size = {42, 14} },  // Percentage inside the outline
+    [LAYOUT_BATTERY_TEXT]        = { .origin = {43, 17},  .size = {42, 14} },  // Percentage inside the outline (Gothic 14 glyphs land 2px below the rect top)
     [LAYOUT_BATTERY_TIME]        = { .origin = {40, 34},  .size = {48, 16} },  // Time since last charge
     [LAYOUT_BATTERY_BOX]         = { .origin = {43, 19},  .size = {42, 15} },  // Same size as the original MSS7 art
     [LAYOUT_CONNECTION]          = { .origin = {44, 152}, .size = {56, 20} },
