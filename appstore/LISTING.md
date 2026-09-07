@@ -53,10 +53,10 @@ source is published so anyone can check or improve it.
 
 ## 3. Release notes
 
-For the current release (17.1.1) the notes are:
+For the current release (17.2.0) the notes are:
 
 ```
-MSS Refreshed 17.1.1
+MSS Refreshed 17.2.0
 
 • Settings page reorganised: options only appear when relevant, one clear
   week-number choice, Classic and Clean presets with previews, reset button,
@@ -70,7 +70,7 @@ MSS Refreshed 17.1.1
   (8:30), moon at night unless it is raining or snowing, and last night's
   sleep shown until a time you choose
 • Blinking backlight really blinks once a second now
-• 17.1.1: presets no longer touch your city, units or alerts; sleep total
+• 17.2.0: presets no longer touch your city, units or alerts; sleep total
   comes from the night's actual sleep sessions
 ```
 
@@ -90,7 +90,7 @@ MSS Refreshed 17.0 — first release.
 
 ## 4. Version
 
-The `.pbw` reports **17.1.1** (from `package.json` → `version`). Every later
+The `.pbw` reports **17.2.0** (from `package.json` → `version`). Every later
 upload to this listing must carry a higher version — bump `"version"` in
 `package.json` and run `pebble build` before each new release.
 
