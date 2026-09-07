@@ -1,33 +1,40 @@
 #include "mock_pebble.h"
 
-// Simple in-memory storage for mocks
-static int s_int_store[100];
-static char s_str_store[100][64];
+// In-memory persistent storage. Keys go up to 207 (see keys.h); a key only
+// "exists" once something has been written to it, like the real store.
+#define MOCK_PERSIST_KEYS 256
+static int s_int_store[MOCK_PERSIST_KEYS];
+static char s_str_store[MOCK_PERSIST_KEYS][64];
+static bool s_exists[MOCK_PERSIST_KEYS];
 
 void persist_write_int(uint32_t key, int value) {
-    if (key < 100) s_int_store[key] = value;
+    if (key < MOCK_PERSIST_KEYS) { s_int_store[key] = value; s_exists[key] = true; }
 }
 
 int persist_read_int(uint32_t key) {
-    if (key < 100) return s_int_store[key];
+    if (key < MOCK_PERSIST_KEYS) return s_int_store[key];
     return 0;
 }
 
 void persist_write_string(uint32_t key, const char* value) {
-    if (key < 100) strncpy(s_str_store[key], value, 64);
+    if (key < MOCK_PERSIST_KEYS) {
+        strncpy(s_str_store[key], value, 63);
+        s_str_store[key][63] = '\0';
+        s_exists[key] = true;
+    }
 }
 
 int persist_read_string(uint32_t key, char* buffer, size_t buffer_size) {
-    if (key < 100) {
-        strncpy(buffer, s_str_store[key], buffer_size);
+    if (key < MOCK_PERSIST_KEYS && buffer_size > 0) {
+        strncpy(buffer, s_str_store[key], buffer_size - 1);
+        buffer[buffer_size - 1] = '\0';
         return strlen(s_str_store[key]);
     }
     return 0;
 }
 
 bool persist_exists(uint32_t key) {
-    (void)key;
-    return true; // Simplification
+    return key < MOCK_PERSIST_KEYS && s_exists[key];
 }
 
 // Battery service stubs
