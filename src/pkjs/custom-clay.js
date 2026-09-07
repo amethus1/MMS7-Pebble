@@ -46,10 +46,12 @@ module.exports = function (minified) {
         });
     }
 
-    // --- Extra information: timezone format only matters for Timezone ---
+    // --- Extra information: timezone format only matters for Timezone, the
+    // sleep cutoff only for the automatic sleep/steps mode ---
     function applyExtraInfo() {
-        var showTimezone = intValue(byKey('KEY_SET_HEALTH'), 5) === 5;
-        setVisible(byKey('KEY_SET_TZ_FORMAT'), showTimezone);
+        var mode = intValue(byKey('KEY_SET_HEALTH'), 5);
+        setVisible(byKey('KEY_SET_TZ_FORMAT'), mode === 5);
+        setVisible(byKey('KEY_SET_SLEEP_UNTIL_HOUR'), mode === 1);
     }
 
     // --- Weather location: the city is a fallback in GPS mode, the source otherwise ---
@@ -76,9 +78,17 @@ module.exports = function (minified) {
         });
     }
 
-    // --- Presets: fill in a set of values; the user still taps Save ---
+    // --- Presets: fill in the appearance / display choices; the user still
+    // taps Save. Location, units, alerts and the like are personal settings
+    // and are left alone - the Reset button is the only thing that touches them.
+    var PRESET_KEYS = [
+        'KEY_SET_DATE_FORMAT', 'KEY_SET_LABEL_INDEX_1', 'KEY_SET_LABEL_INDEX_2',
+        'KEY_SET_LABEL_INDEX_3', 'KEY_SET_LABEL_INDEX_4', 'hideBluetooth',
+        'KEY_SET_HIDE_BATTERY_TIME', 'KEY_SET_MOON_PHASE', 'KEY_SET_DISPLAY_SEC',
+        'KEY_SET_SHOW_GRID'
+    ];
     var PRESETS = {
-        classic: null,   // null = every default
+        classic: {},     // every preset key at its default
         clean: {
             KEY_SET_DATE_FORMAT: '%a %d %b',
             KEY_SET_LABEL_INDEX_1: 5,   // hi / lo
@@ -92,16 +102,15 @@ module.exports = function (minified) {
         }
     };
     function applyPreset(name) {
-        resetToDefaults();
-        var values = PRESETS[name];
-        if (!values) return;
-        Object.keys(values).forEach(function (key) {
+        var values = PRESETS[name] || {};
+        PRESET_KEYS.forEach(function (key) {
             var item = byKey(key);
-            if (item) item.set(values[key]);
+            if (!item) return;
+            var value = Object.prototype.hasOwnProperty.call(values, key)
+                ? values[key]
+                : (item.config || {}).defaultValue;
+            if (value !== undefined) item.set(value);
         });
-        applyWeekMode();
-        applyExtraInfo();
-        applyLocation();
     }
 
     // --- Reset ---

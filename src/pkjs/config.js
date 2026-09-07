@@ -58,7 +58,7 @@ var ABOUT_HTML =
     '<p><b>Week number.</b> CW is the ISO calendar week. Fiscal week (WK) counts weeks from a start date you choose - useful if your work year does not start in January.</p>' +
     '<p><b>Seconds.</b> Showing seconds all the time costs battery. "On shake" shows them for a few seconds when you flick your wrist.</p>' +
     '<p><b>Moon.</b> At night the weather icon can be replaced by the current moon phase. "Unless it is raining or snowing" keeps the weather icon on wet nights, when it is the more useful of the two.</p>' +
-    '<p><b>Steps by day, sleep at night.</b> Shows last night\'s sleep (counted from 6 pm the evening before) until the time you pick, then steps for the rest of the day.</p>' +
+    '<p><b>Sleep in the morning, then steps.</b> Shows last night\'s sleep until the time you pick, then steps for the rest of the day.</p>' +
     '<p>MSS Refreshed is a fan update of Multifunctional 7 Segment by FG. Source and downloads: github.com/amethus1/MMS7-Pebble</p>' +
     '</div>';
 
@@ -427,7 +427,7 @@ module.exports = [
                 "defaultValue": 5,
                 "options": [
                     { "label": "Nothing", "value": 0 },
-                    { "label": "Steps by day, sleep at night", "value": 1 },
+                    { "label": "Sleep in the morning, then steps", "value": 1 },
                     { "label": "Steps", "value": 3 },
                     { "label": "Sleep", "value": 4 },
                     { "label": "Timezone", "value": 5 }
