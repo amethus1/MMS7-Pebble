@@ -68,7 +68,10 @@ int moonphase_char_number(int moonphase_number)
     char_number = 48;
   } else if (moonphase_number == 0)
   {
-    char_number = 49;
+    // New moon. The original used '1', but moon_phases.ttf has no glyph for
+    // it, so the watch drew a stray digit from its fallback font instead.
+    // '@' is the font's new-moon outline.
+    char_number = '@';
   } else if (moonphase_number < 14)
   {
     char_number = moonphase_number + 96;
