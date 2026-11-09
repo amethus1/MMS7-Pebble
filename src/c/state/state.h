@@ -46,6 +46,8 @@ typedef struct {
     int steps_trend;   // -1 below avg, 0 equal/unknown, 1 above avg
     int sleep_trend;   // -1 below avg, 0 equal/unknown, 1 above avg
     int trend_display;
+    int heart_rate_bpm;        // Latest filtered reading; 0 when there is none from the last 15 minutes
+    bool heart_rate_available; // False without a sensor, or with heart rate turned off in Pebble Health
 } HealthState;
 
 typedef struct {

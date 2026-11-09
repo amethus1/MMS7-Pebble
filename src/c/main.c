@@ -19,15 +19,18 @@
 #include "ui/layers/date_layer.h"
 #include "ui/layers/weather_layer.h"
 #include "ui/layers/status_layer.h"
+#include "ui/layers/heart_layer.h"
 #include "ui/layout.h"
 
 // UI Components
 static Window *s_main_window;
+static Layer *s_content_layer;   // Holds every face layer; slides up while a Timeline Peek covers the bottom
 static BackgroundLayer *s_bg_layer;
 static TimeLayer *s_time_layer;
 static DateLayer *s_date_layer;
 static WeatherLayer *s_weather_layer;
 static StatusLayer *s_status_layer;
+static HeartLayer *s_heart_layer;
 
 // Shake-to-show seconds state
 static bool s_seconds_visible = false;
@@ -86,14 +89,63 @@ static bool cw_layer_wanted(const GlobalSettings* settings) {
     return !settings->HideCW && !settings->ShowWeekInDate;
 }
 
-// On the round display the calendar week and the seconds share the slot
-// between the sunrise and sunset times, so the week yields while seconds show.
+// Heart rate takes the week label's slot when it is turned on and the watch
+// can measure it. Without a sensor (or with heart rate off in Pebble Health)
+// the week label stays, so the setting never leaves the slot empty.
+static bool heart_rate_wanted(const GlobalSettings* settings) {
+    return settings->HeartRate && state_get_ptr()->health.heart_rate_available;
+}
+
+// On the round display the week slot and the seconds share the space
+// between the sunrise and sunset times, so the slot yields while seconds show.
 static void apply_cw_visibility() {
-    bool visible = cw_layer_wanted(settings_get_instance());
+    GlobalSettings* settings = settings_get_instance();
+    bool slot_free = true;
 #if defined(PBL_ROUND)
-    visible = visible && !s_seconds_visible;
+    slot_free = !s_seconds_visible;
 #endif
-    if (s_date_layer) date_layer_set_cw_visible(s_date_layer, visible);
+    bool heart = heart_rate_wanted(settings);
+    if (s_date_layer) date_layer_set_cw_visible(s_date_layer, slot_free && !heart && cw_layer_wanted(settings));
+    if (s_heart_layer) layer_set_hidden(heart_layer_get_layer(s_heart_layer), !(slot_free && heart));
+}
+
+static void update_heart_rate_ui() {
+    if (s_heart_layer) heart_layer_set_bpm(s_heart_layer, state_get_ptr()->health.heart_rate_bpm);
+    apply_cw_visibility();
+}
+
+// --- Timeline Peek ---
+
+// A peek slides up over the bottom of the screen. Move the whole face up just
+// enough to keep the clock clear of it; the top rows go off-screen instead,
+// and the status row under the clock is what the peek covers. Called on
+// every animation frame, so it follows the peek in and out.
+#define PEEK_CLEARANCE 2
+
+static void apply_peek_shift() {
+    if (!s_content_layer) return;
+    Layer *window_layer = window_get_root_layer(s_main_window);
+    GRect full = layer_get_bounds(window_layer);
+    GRect visible = layer_get_unobstructed_bounds(window_layer);
+    int16_t visible_bottom = visible.origin.y + visible.size.h;
+    int16_t shift = 0;
+    if (visible_bottom < full.origin.y + full.size.h) {
+        GRect digits = layout_get_time_digit_rect(DIGIT_H1);
+        shift = digits.origin.y + digits.size.h + PEEK_CLEARANCE - visible_bottom;
+        if (shift < 0) shift = 0;
+        if (shift > digits.origin.y) shift = digits.origin.y;   // Never push the clock off the top
+    }
+    GRect frame = full;
+    frame.origin.y -= shift;
+    layer_set_frame(s_content_layer, frame);
+}
+
+static void peek_change(AnimationProgress progress, void *context) {
+    apply_peek_shift();
+}
+
+static void peek_did_change(void *context) {
+    apply_peek_shift();
 }
 
 static void set_seconds_visible(bool show) {
@@ -261,9 +313,14 @@ static void update_colors_all() {
     GlobalSettings *settings = settings_get_instance();
     const ColorScheme *scheme = colors_get_scheme(settings->ColorProfile);
     
+    // Only ever seen under a peek, if at all; match the face rather than show white
+    window_set_background_color(s_main_window, scheme->clock_bg);
     background_layer_mark_dirty(s_bg_layer);
     time_layer_update_colors(s_time_layer, scheme->clock);
     date_layer_update_color(s_date_layer, scheme->date);
+    // Same colour as the week label it replaces; a red heart where the screen has colour
+    heart_layer_set_colors(s_heart_layer, scheme->date,
+        PBL_IF_COLOR_ELSE(gcolor_equal(scheme->clock_bg, GColorRed) ? scheme->date : GColorRed, scheme->date));
     weather_layer_update_colors(s_weather_layer);
     status_layer_update_colors(s_status_layer);
 }
@@ -272,6 +329,7 @@ static void update_all_ui() {
     update_colors_all();
     time_layer_set_leading_zero(s_time_layer, settings_get_instance()->LeadingZero != 0);
     date_layer_set_cw_left(s_date_layer, settings_get_instance()->ExtraInfoCenter != 0);
+    heart_layer_set_left(s_heart_layer, settings_get_instance()->ExtraInfoCenter != 0);
     
     // Time
     time_t now = time(NULL);
@@ -289,6 +347,7 @@ static void update_all_ui() {
     // Data Layers
     weather_layer_update_data(s_weather_layer);
     status_layer_update(s_status_layer);
+    update_heart_rate_ui();
     
     layer_mark_dirty(window_get_root_layer(s_main_window));
 }
@@ -350,6 +409,10 @@ static void process_events() {
             // Update date/week only on minute change (throttled from per-second)
             update_date_and_week(t);
 
+            // A reading older than 15 minutes expires without any health
+            // event, so look again once a minute
+            health_update_heart_rate();
+
             // Weather auto-update
             int interval = settings->WeatherUpdateInterval;
             if (interval > 0 && t->tm_min % interval == 0) {
@@ -375,6 +438,10 @@ static void process_events() {
 
     if ((flags & (EVENT_BATTERY_STATE | EVENT_CONNECTION | EVENT_HEALTH_UPDATE)) && !(flags & EVENT_TIME_TICK)) {
         status_layer_update(s_status_layer);
+    }
+
+    if (flags & (EVENT_TIME_TICK | EVENT_HEALTH_UPDATE)) {
+        update_heart_rate_ui();
     }
 }
 
@@ -423,8 +490,14 @@ static void update_date_and_week(struct tm *t) {
 // --- Window Lifecycle ---
 
 static void main_window_load(Window *window) {
-    Layer *root = window_get_root_layer(window);
-    GRect bounds = layer_get_bounds(root);
+    Layer *window_layer = window_get_root_layer(window);
+    GRect bounds = layer_get_bounds(window_layer);
+
+    // Every layer goes in one full-screen container, so a Timeline Peek can
+    // move the whole face at once (apply_peek_shift)
+    s_content_layer = layer_create(bounds);
+    layer_add_child(window_layer, s_content_layer);
+    Layer *root = s_content_layer;
     
     // Initialize dynamic layout engine
     layout_init(bounds);
@@ -440,6 +513,11 @@ static void main_window_load(Window *window) {
     // Date 
     s_date_layer = date_layer_create(bounds);
     layer_add_child(root, date_layer_get_layer(s_date_layer));
+
+    // Heart rate, in the week label's slot
+    s_heart_layer = heart_layer_create();
+    layer_set_hidden(heart_layer_get_layer(s_heart_layer), true);
+    layer_add_child(root, heart_layer_get_layer(s_heart_layer));
     
     // Weather
     s_weather_layer = weather_layer_create(bounds);
@@ -454,14 +532,26 @@ static void main_window_load(Window *window) {
 
     // Apply seconds visibility once layers exist
     update_tick_timer_service();
+
+    // Follow Timeline Peeks, and catch one that is already showing
+    unobstructed_area_service_subscribe((UnobstructedAreaHandlers) {
+        .change = peek_change,
+        .did_change = peek_did_change,
+    }, NULL);
+    apply_peek_shift();
 }
 
 static void main_window_unload(Window *window) {
+    unobstructed_area_service_unsubscribe();
     background_layer_destroy(s_bg_layer);
     time_layer_destroy(s_time_layer);
     date_layer_destroy(s_date_layer);
+    heart_layer_destroy(s_heart_layer);
+    s_heart_layer = NULL;
     weather_layer_destroy(s_weather_layer);
     status_layer_destroy(s_status_layer);
+    layer_destroy(s_content_layer);
+    s_content_layer = NULL;
 }
 
 static void init() {

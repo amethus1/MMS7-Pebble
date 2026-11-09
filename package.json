@@ -82,7 +82,8 @@
             "KEY_SET_HIDE_BATTERY_TIME": 204,
             "KEY_SET_LEADING_ZERO": 205,
             "KEY_SET_SLEEP_UNTIL_HOUR": 206,
-            "KEY_SET_EXTRA_INFO_CENTER": 207
+            "KEY_SET_EXTRA_INFO_CENTER": 207,
+            "KEY_SET_HEART_RATE": 208
         },
         "projectType": "native",
         "resources": {

@@ -72,3 +72,4 @@
 #define KEY_SET_LEADING_ZERO       205  // 0 shows 8:30 instead of 08:30
 #define KEY_SET_SLEEP_UNTIL_HOUR   206  // Auto health mode shows sleep until this hour
 #define KEY_SET_EXTRA_INFO_CENTER  207  // Emery: timezone / health in the middle of the status row
+#define KEY_SET_HEART_RATE         208  // 1 shows heart rate in the week label's slot
