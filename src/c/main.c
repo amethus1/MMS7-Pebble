@@ -316,6 +316,8 @@ static int get_seconds_timeout() {
 // Helper to update colors for all layers
 static void update_colors_all() {
     GlobalSettings *settings = settings_get_instance();
+    // The custom scheme is built from the settings, so rebuild it first
+    colors_set_custom(settings->CustomColors, settings->CustomIconAuto != 0);
     const ColorScheme *scheme = colors_get_scheme(settings->ColorProfile);
     
     // Only ever seen under a peek, if at all; match the face rather than show white
@@ -575,6 +577,7 @@ static void init() {
     state_init();
     settings_load();
     colors_init();
+    colors_set_custom(settings_get_instance()->CustomColors, settings_get_instance()->CustomIconAuto != 0);
     weather_init();
     battery_module_init();
     health_module_init();

@@ -1,6 +1,7 @@
 #pragma once
 #include <pebble.h>
 #include "../config.h"
+#include "../modules/custom_colors.h"
 
 // Defined in config.h but useful to have visible here
 #ifndef DATE_FORMAT
@@ -49,6 +50,10 @@ typedef struct {
   int ExtraInfoCenter;   // Emery: timezone / health centred in the status row, week on the left
   int HeartRate;         // 1 shows heart rate in the week label's slot (the week can still go in the date line)
   
+  // Custom colour scheme, used while ColorProfile is COLOR_PROFILE_CUSTOM
+  int CustomColors[CUSTOM_COLOR_COUNT];   // 0xRRGGBB, indexed by CustomColor
+  int CustomIconAuto;                     // 1 colours the weather icon by conditions
+
   // State
   int AppFirstStart;
   int warning_color_location;

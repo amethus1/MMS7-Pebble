@@ -1,6 +1,7 @@
 #include "settings.h"
 #include "../keys.h"
 #include <stdlib.h>
+#include <string.h>
 
 static GlobalSettings s_settings;
 
@@ -42,6 +43,10 @@ static void sanitize_settings(void) {
     s_settings.SleepUntilHour = clamp_int(s_settings.SleepUntilHour, 0, 23);
     s_settings.ExtraInfoCenter = clamp_int(s_settings.ExtraInfoCenter, 0, 1);
     s_settings.HeartRate = clamp_int(s_settings.HeartRate, 0, 1);
+    for (int i = 0; i < CUSTOM_COLOR_COUNT; i++) {
+        s_settings.CustomColors[i] &= 0xFFFFFF;   // 0xRRGGBB only
+    }
+    s_settings.CustomIconAuto = clamp_int(s_settings.CustomIconAuto, 0, 1);
 }
 
 GlobalSettings* settings_get_instance() {
@@ -82,6 +87,9 @@ void settings_load() {
   s_settings.SleepUntilHour = 10;
   s_settings.ExtraInfoCenter = 0;
   s_settings.HeartRate = 0;
+  static const int custom_defaults[CUSTOM_COLOR_COUNT] = CUSTOM_COLOR_DEFAULTS;
+  memcpy(s_settings.CustomColors, custom_defaults, sizeof(s_settings.CustomColors));
+  s_settings.CustomIconAuto = 1;
   s_settings.warning_color_location = 0;
 
   // Load from storage
@@ -116,6 +124,19 @@ void settings_load() {
   if (persist_exists(KEY_SET_SLEEP_UNTIL_HOUR)) s_settings.SleepUntilHour = persist_read_int(KEY_SET_SLEEP_UNTIL_HOUR);
   if (persist_exists(KEY_SET_EXTRA_INFO_CENTER)) s_settings.ExtraInfoCenter = persist_read_int(KEY_SET_EXTRA_INFO_CENTER);
   if (persist_exists(KEY_SET_HEART_RATE)) s_settings.HeartRate = persist_read_int(KEY_SET_HEART_RATE);
+  if (persist_exists(KEY_SET_CUSTOM_BACKGROUND)) s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND] = persist_read_int(KEY_SET_CUSTOM_BACKGROUND);
+  if (persist_exists(KEY_SET_CUSTOM_CLOCK)) s_settings.CustomColors[CUSTOM_COLOR_CLOCK] = persist_read_int(KEY_SET_CUSTOM_CLOCK);
+  if (persist_exists(KEY_SET_CUSTOM_DATE)) s_settings.CustomColors[CUSTOM_COLOR_DATE] = persist_read_int(KEY_SET_CUSTOM_DATE);
+  if (persist_exists(KEY_SET_CUSTOM_WEATHER)) s_settings.CustomColors[CUSTOM_COLOR_WEATHER] = persist_read_int(KEY_SET_CUSTOM_WEATHER);
+  if (persist_exists(KEY_SET_CUSTOM_ICON)) s_settings.CustomColors[CUSTOM_COLOR_ICON] = persist_read_int(KEY_SET_CUSTOM_ICON);
+  if (persist_exists(KEY_SET_CUSTOM_HEADER_TEXT)) s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT] = persist_read_int(KEY_SET_CUSTOM_HEADER_TEXT);
+  if (persist_exists(KEY_SET_CUSTOM_HEADER_BG)) s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG] = persist_read_int(KEY_SET_CUSTOM_HEADER_BG);
+  if (persist_exists(KEY_SET_CUSTOM_SUN)) s_settings.CustomColors[CUSTOM_COLOR_SUN] = persist_read_int(KEY_SET_CUSTOM_SUN);
+  if (persist_exists(KEY_SET_CUSTOM_EXTRA)) s_settings.CustomColors[CUSTOM_COLOR_EXTRA] = persist_read_int(KEY_SET_CUSTOM_EXTRA);
+  if (persist_exists(KEY_SET_CUSTOM_BLUETOOTH)) s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH] = persist_read_int(KEY_SET_CUSTOM_BLUETOOTH);
+  if (persist_exists(KEY_SET_CUSTOM_BATTERY)) s_settings.CustomColors[CUSTOM_COLOR_BATTERY] = persist_read_int(KEY_SET_CUSTOM_BATTERY);
+  if (persist_exists(KEY_SET_CUSTOM_LINES)) s_settings.CustomColors[CUSTOM_COLOR_LINES] = persist_read_int(KEY_SET_CUSTOM_LINES);
+  if (persist_exists(KEY_SET_CUSTOM_ICON_AUTO)) s_settings.CustomIconAuto = persist_read_int(KEY_SET_CUSTOM_ICON_AUTO);
   
   if (persist_exists(KEY_DETECT_FIRST_START)) s_settings.AppFirstStart = persist_read_int(KEY_DETECT_FIRST_START);
   else s_settings.AppFirstStart = 1;
@@ -158,6 +179,19 @@ void settings_save() {
   persist_write_int(KEY_SET_SLEEP_UNTIL_HOUR, s_settings.SleepUntilHour);
   persist_write_int(KEY_SET_EXTRA_INFO_CENTER, s_settings.ExtraInfoCenter);
   persist_write_int(KEY_SET_HEART_RATE, s_settings.HeartRate);
+  persist_write_int(KEY_SET_CUSTOM_BACKGROUND, s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND]);
+  persist_write_int(KEY_SET_CUSTOM_CLOCK, s_settings.CustomColors[CUSTOM_COLOR_CLOCK]);
+  persist_write_int(KEY_SET_CUSTOM_DATE, s_settings.CustomColors[CUSTOM_COLOR_DATE]);
+  persist_write_int(KEY_SET_CUSTOM_WEATHER, s_settings.CustomColors[CUSTOM_COLOR_WEATHER]);
+  persist_write_int(KEY_SET_CUSTOM_ICON, s_settings.CustomColors[CUSTOM_COLOR_ICON]);
+  persist_write_int(KEY_SET_CUSTOM_HEADER_TEXT, s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT]);
+  persist_write_int(KEY_SET_CUSTOM_HEADER_BG, s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG]);
+  persist_write_int(KEY_SET_CUSTOM_SUN, s_settings.CustomColors[CUSTOM_COLOR_SUN]);
+  persist_write_int(KEY_SET_CUSTOM_EXTRA, s_settings.CustomColors[CUSTOM_COLOR_EXTRA]);
+  persist_write_int(KEY_SET_CUSTOM_BLUETOOTH, s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH]);
+  persist_write_int(KEY_SET_CUSTOM_BATTERY, s_settings.CustomColors[CUSTOM_COLOR_BATTERY]);
+  persist_write_int(KEY_SET_CUSTOM_LINES, s_settings.CustomColors[CUSTOM_COLOR_LINES]);
+  persist_write_int(KEY_SET_CUSTOM_ICON_AUTO, s_settings.CustomIconAuto);
   
   persist_write_int(KEY_DETECT_FIRST_START, s_settings.AppFirstStart);
   persist_write_int(KEY_WARN_LOCATION, s_settings.warning_color_location);
@@ -293,6 +327,58 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         break;
       case KEY_SET_HEART_RATE:
         s_settings.HeartRate = tuple_to_int(t, s_settings.HeartRate);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_BACKGROUND:
+        s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_CLOCK:
+        s_settings.CustomColors[CUSTOM_COLOR_CLOCK] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_CLOCK]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_DATE:
+        s_settings.CustomColors[CUSTOM_COLOR_DATE] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_DATE]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_WEATHER:
+        s_settings.CustomColors[CUSTOM_COLOR_WEATHER] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_WEATHER]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_ICON:
+        s_settings.CustomColors[CUSTOM_COLOR_ICON] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_ICON]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_HEADER_TEXT:
+        s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_HEADER_BG:
+        s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_SUN:
+        s_settings.CustomColors[CUSTOM_COLOR_SUN] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_SUN]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_EXTRA:
+        s_settings.CustomColors[CUSTOM_COLOR_EXTRA] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_EXTRA]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_BLUETOOTH:
+        s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_BATTERY:
+        s_settings.CustomColors[CUSTOM_COLOR_BATTERY] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BATTERY]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_LINES:
+        s_settings.CustomColors[CUSTOM_COLOR_LINES] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_LINES]);
+        changed = true;
+        break;
+      case KEY_SET_CUSTOM_ICON_AUTO:
+        s_settings.CustomIconAuto = tuple_to_int(t, s_settings.CustomIconAuto);
         changed = true;
         break;
       case KEY_DETECT_FIRST_START:

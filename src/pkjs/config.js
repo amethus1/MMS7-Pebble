@@ -27,8 +27,48 @@ var COLOR_SCHEME_OPTIONS = [
     { "label": "Green on black", "value": 5 },
     { "label": "Blue on black", "value": 6 },
     { "label": "Colourful, blue clock", "value": 14 },
-    { "label": "Colourful, white clock", "value": 15 }
+    { "label": "Colourful, white clock", "value": 15 },
+    { "label": "Custom - choose your own", "value": 16 }
 ];
+
+// The custom scheme: one colour picker per part of the face, shown only while
+// "Custom" is selected (see custom-clay.js). Order, keys and defaults mirror
+// src/c/modules/custom_colors.h; the defaults are "White on black, with colours".
+var CUSTOM_COLOUR_ITEMS = [
+    ['KEY_SET_CUSTOM_BACKGROUND', 'Background', '000000'],
+    ['KEY_SET_CUSTOM_CLOCK', 'Clock', 'FFFFFF'],
+    ['KEY_SET_CUSTOM_DATE', 'Date and week', 'FFFFFF', 'Also the heart rate number'],
+    ['KEY_SET_CUSTOM_WEATHER', 'Weather text', 'FFFFFF', 'The temperature too, unless Coloured temperature is on'],
+    ['KEY_SET_CUSTOM_ICON', 'Moon and weather icon', 'FFFFFF'],
+    ['KEY_SET_CUSTOM_HEADER_TEXT', 'Location and weather age', 'FFFFFF'],
+    ['KEY_SET_CUSTOM_HEADER_BG', 'Background behind the location', '000000', 'Still turns yellow when the weather is old, red when a fetch fails'],
+    ['KEY_SET_CUSTOM_SUN', 'Sunrise and sunset', 'FFFF00'],
+    ['KEY_SET_CUSTOM_EXTRA', 'Steps, sleep and timezone', 'FFFFFF'],
+    ['KEY_SET_CUSTOM_BLUETOOTH', 'Bluetooth', '00AAFF', 'Still turns red when disconnected'],
+    ['KEY_SET_CUSTOM_BATTERY', 'Battery', 'FFFFFF', 'The charge bar stays green, orange or red'],
+    ['KEY_SET_CUSTOM_LINES', 'Grid lines', 'AAAAAA']
+].map(function (entry) {
+    var item = {
+        "type": "color",
+        "messageKey": entry[0],
+        "group": "custom_colours",
+        "capabilities": ["COLOR"],
+        "label": entry[1],
+        "defaultValue": entry[2]
+    };
+    if (entry[3]) item.description = entry[3];
+    return item;
+}).concat([
+    {
+        "type": "toggle",
+        "messageKey": "KEY_SET_CUSTOM_ICON_AUTO",
+        "group": "custom_colours",
+        "capabilities": ["COLOR"],
+        "label": "Colour the weather icon by the weather",
+        "defaultValue": true,
+        "description": "Yellow sun, blue rain and so on. Off uses the moon and weather icon colour"
+    }
+]);
 
 // The weather-detail layout: a crop of the real face with the four slots
 // marked, so the numbered choices below map onto the watch without guesswork.
@@ -55,6 +95,7 @@ var ABOUT_HTML =
     '<p><b>Weather age.</b> The number in the top-right corner is how long ago the weather was fetched. A <b>!</b> in front of it means the last fetch failed and you are seeing older data; the header also turns yellow when the data is over two hours old and red after a failed fetch.</p>' +
     '<p><b>~ before the city.</b> The phone could not get a GPS fix, so the weather is fresh but for the place the phone was last seen. If you have typed a city under Weather, it is used when there is no remembered position either.</p>' +
     '<p><b>Steps and the arrow.</b> With steps selected under Extra information, the arrow next to the count compares today with your recent daily average: up means ahead, down means behind.</p>' +
+    '<p><b>Custom colours.</b> Choose Custom under Colour scheme to pick a colour for each part of the face. The warnings keep their own colours so they still stand out: yellow or red behind the location, red Bluetooth, and the battery bar.</p>' +
     '<p><b>Heart rate.</b> The watch\'s latest reading, updated as often as Pebble Health measures it. -- means there has been no reading in the last 15 minutes, for example while the watch is off your wrist.</p>' +
     '<p><b>Week number.</b> CW is the ISO calendar week. Fiscal week (WK) counts weeks from a start date you choose - useful if your work year does not start in January. Retail fiscal week follows the retail calendar, where the year ends on the Saturday closest to January 31: weeks run Sunday to Saturday and the start date moves by itself each year.</p>' +
     '<p><b>Seconds.</b> Showing seconds all the time costs battery. "On shake" shows them for a few seconds when you flick your wrist.</p>' +
@@ -104,7 +145,8 @@ module.exports = [
                 "label": "Colour scheme",
                 "defaultValue": 2,
                 "options": COLOR_SCHEME_OPTIONS
-            },
+            }
+        ].concat(CUSTOM_COLOUR_ITEMS, [
             {
                 "type": "select",
                 "messageKey": "KEY_SET_INVERT_COLOR",
@@ -157,7 +199,7 @@ module.exports = [
                 "defaultValue": false,
                 "description": "Only shows the label when the phone is disconnected"
             }
-        ]
+        ])
     },
 
     // ========== TIME & DATE ==========

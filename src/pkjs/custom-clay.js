@@ -46,6 +46,15 @@ module.exports = function (minified) {
         });
     }
 
+    // --- Custom colours: the pickers only matter while the Custom scheme is
+    // selected (value 16, COLOR_PROFILE_CUSTOM on the watch) ---
+    function applyCustomColours() {
+        var custom = intValue(byKey('KEY_SET_INVERT_COLOR'), 0) === 16;
+        clayConfig.getItemsByGroup('custom_colours').forEach(function (item) {
+            setVisible(item, custom);
+        });
+    }
+
     // --- Extra information: timezone format only matters for Timezone, the
     // sleep cutoff only for the automatic sleep/steps mode ---
     function applyExtraInfo() {
@@ -125,6 +134,7 @@ module.exports = function (minified) {
         applyWeekMode();
         applyExtraInfo();
         applyLocation();
+        applyCustomColours();
     }
 
     clayConfig.on(clayConfig.EVENTS.AFTER_BUILD, function () {
@@ -142,6 +152,9 @@ module.exports = function (minified) {
 
         var health = byKey('KEY_SET_HEALTH');
         if (health) health.on('change', applyExtraInfo);
+
+        var scheme = byKey('KEY_SET_INVERT_COLOR');
+        if (scheme) scheme.on('change', applyCustomColours);
 
         var locationMode = byKey('autodetect_loc');
         if (locationMode) locationMode.on('change', applyLocation);
@@ -167,6 +180,7 @@ module.exports = function (minified) {
         applyWeekMode();
         applyExtraInfo();
         applyLocation();
+        applyCustomColours();
         applyAbout(false);
     });
 };

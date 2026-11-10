@@ -41,6 +41,7 @@ This project is a modernize and refactored version of the classic MSS watchface.
 - **Integration:** Fiscal week number can be appended to the date line or shown in the weather info area.
 
 ### 🎨 Customization
+- **Custom Colours:** On colour watches, choose *Custom* under Colour scheme to pick your own colour for each part of the face: background, clock, date, weather, icons, header, sun times, extra information, Bluetooth, battery and grid lines.
 - **Visibility Toggles:** Option to hide the Calendar Week and Bluetooth connection label for a cleaner look.
 - **Health Info:** Toggle between showing Timezone name, Steps, Sleep, or Auto-switch (Steps day / Sleep night) in the bottom-left corner.
 - **Heart Rate:** On watches with a heart rate sensor, the week label's slot under the clock can show your latest heart rate instead (the week can move into the date line).

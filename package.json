@@ -5,7 +5,7 @@
     "scripts": {
         "test": "./tests/run_tests.sh",
         "test:js": "node tests/check_message_keys.js && node tests/test_settings_js.js && node tests/test_weather_api_js.js",
-        "test:c": "cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_weather_formatting.c src/c/modules/weather_format.c -o /tmp/test_weather_formatting && /tmp/test_weather_formatting && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_weather.c tests/mock_pebble.c src/c/modules/weather.c src/c/state/state.c src/c/state/events.c -o /tmp/test_weather && /tmp/test_weather && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_battery.c tests/mock_pebble.c src/c/modules/battery.c src/c/state/state.c src/c/state/events.c -o /tmp/test_battery && /tmp/test_battery && cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_rules.c src/c/modules/rules.c -o /tmp/test_rules && /tmp/test_rules && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_settings.c tests/mock_pebble.c src/c/state/settings.c src/c/state/state.c src/c/state/events.c -o /tmp/test_settings && /tmp/test_settings && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_mooncalc.c tests/mock_pebble.c src/c/mooncalc.c -o /tmp/test_mooncalc && /tmp/test_mooncalc"
+        "test:c": "cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_weather_formatting.c src/c/modules/weather_format.c -o /tmp/test_weather_formatting && /tmp/test_weather_formatting && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_weather.c tests/mock_pebble.c src/c/modules/weather.c src/c/state/state.c src/c/state/events.c -o /tmp/test_weather && /tmp/test_weather && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_battery.c tests/mock_pebble.c src/c/modules/battery.c src/c/state/state.c src/c/state/events.c -o /tmp/test_battery && /tmp/test_battery && cc -std=c99 -Wall -Wextra -Werror -I src/c tests/test_rules.c src/c/modules/rules.c -o /tmp/test_rules && /tmp/test_rules && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_settings.c tests/mock_pebble.c src/c/state/settings.c src/c/state/state.c src/c/state/events.c -o /tmp/test_settings && /tmp/test_settings && cc -std=c99 -Wall -Wextra -Werror -I tests -I src/c tests/test_mooncalc.c tests/mock_pebble.c src/c/mooncalc.c -o /tmp/test_mooncalc && /tmp/test_mooncalc && cc -std=c99 -Wall -Wextra -Werror -Wno-unused-parameter -I tests -I src/c tests/test_colors.c src/c/modules/colors.c -o /tmp/test_colors && /tmp/test_colors"
     },
     "pebble": {
         "capabilities": [
@@ -86,7 +86,20 @@
             "KEY_SET_LEADING_ZERO": 205,
             "KEY_SET_SLEEP_UNTIL_HOUR": 206,
             "KEY_SET_EXTRA_INFO_CENTER": 207,
-            "KEY_SET_HEART_RATE": 208
+            "KEY_SET_HEART_RATE": 208,
+            "KEY_SET_CUSTOM_BACKGROUND": 210,
+            "KEY_SET_CUSTOM_CLOCK": 211,
+            "KEY_SET_CUSTOM_DATE": 212,
+            "KEY_SET_CUSTOM_WEATHER": 213,
+            "KEY_SET_CUSTOM_ICON": 214,
+            "KEY_SET_CUSTOM_HEADER_TEXT": 215,
+            "KEY_SET_CUSTOM_HEADER_BG": 216,
+            "KEY_SET_CUSTOM_SUN": 217,
+            "KEY_SET_CUSTOM_EXTRA": 218,
+            "KEY_SET_CUSTOM_BLUETOOTH": 219,
+            "KEY_SET_CUSTOM_BATTERY": 220,
+            "KEY_SET_CUSTOM_LINES": 221,
+            "KEY_SET_CUSTOM_ICON_AUTO": 222
         },
         "projectType": "native",
         "resources": {

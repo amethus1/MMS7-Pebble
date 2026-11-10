@@ -61,6 +61,14 @@ cc -std=c99 -Wall -Wextra -Werror \
   -o /tmp/test_mooncalc
 /tmp/test_mooncalc
 
+# -Wno-unused-parameter matches the Pebble SDK's own flags for app code
+cc -std=c99 -Wall -Wextra -Werror -Wno-unused-parameter \
+  -I tests -I src/c \
+  tests/test_colors.c \
+  src/c/modules/colors.c \
+  -o /tmp/test_colors
+/tmp/test_colors
+
 echo "== Pebble build =="
 build_log="$(mktemp)"
 pebble clean >/dev/null 2>&1
