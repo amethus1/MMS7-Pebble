@@ -33,6 +33,7 @@ static void sanitize_settings(void) {
     s_settings.WeatherLabelIndex3 = clamp_int(s_settings.WeatherLabelIndex3, 0, 5);
     s_settings.WeatherLabelIndex4 = clamp_int(s_settings.WeatherLabelIndex4, 0, 5);
     s_settings.WeatherUpdateInterval = clamp_int(s_settings.WeatherUpdateInterval, 0, 360);
+    s_settings.WeekNumberType = clamp_int(s_settings.WeekNumberType, 0, 2);
     s_settings.FiscalStartMonth = clamp_int(s_settings.FiscalStartMonth, 0, 11);
     s_settings.FiscalStartDay = clamp_int(s_settings.FiscalStartDay, 1, 31);
     s_settings.ShowGridLines = clamp_int(s_settings.ShowGridLines, 0, 1);
@@ -166,12 +167,7 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
   Tuple *t = dict_read_first(iterator);
   bool changed = false;
   
-  APP_LOG(APP_LOG_LEVEL_INFO, "=== SETTINGS MESSAGE RECEIVED ===");
-  
   while(t != NULL) {
-    int val = tuple_to_int(t, -999);
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "Key %d = %d (type %d)", (int)t->key, val, t->type);
-    
     switch(t->key) {
       case KEY_SET_INVERT_COLOR:
         s_settings.ColorProfile = tuple_to_int(t, s_settings.ColorProfile);
@@ -187,7 +183,6 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         break;
       case KEY_SET_DISPLAY_SEC:
         s_settings.DisplaySeconds = tuple_to_int(t, s_settings.DisplaySeconds);
-        APP_LOG(APP_LOG_LEVEL_INFO, "DisplaySeconds = %d", s_settings.DisplaySeconds);
         changed = true;
         break;
       case KEY_SET_VIBE_DISC:
@@ -226,7 +221,6 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         break;
       case KEY_SET_HEALTH:
         s_settings.HealthInfo = tuple_to_int(t, s_settings.HealthInfo);
-        APP_LOG(APP_LOG_LEVEL_INFO, "HealthInfo = %d", s_settings.HealthInfo);
         changed = true;
         break;
       case KEY_WEATHER_UPDATE_INT:
@@ -255,22 +249,18 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         break;
       case KEY_SET_WEEK_IN_DATE:
         s_settings.ShowWeekInDate = tuple_to_int(t, s_settings.ShowWeekInDate);
-        APP_LOG(APP_LOG_LEVEL_INFO, "ShowWeekInDate = %d", s_settings.ShowWeekInDate);
         changed = true;
         break;
       case KEY_SET_WEEK_TYPE:
         s_settings.WeekNumberType = tuple_to_int(t, s_settings.WeekNumberType);
-        APP_LOG(APP_LOG_LEVEL_INFO, "WeekNumberType = %d (0=Cal, 1=Fiscal)", s_settings.WeekNumberType);
         changed = true;
         break;
       case KEY_SET_FISCAL_START_MONTH:
         s_settings.FiscalStartMonth = tuple_to_int(t, s_settings.FiscalStartMonth);
-        APP_LOG(APP_LOG_LEVEL_INFO, "FiscalStartMonth = %d", s_settings.FiscalStartMonth);
         changed = true;
         break;
       case KEY_SET_FISCAL_START_DAY:
         s_settings.FiscalStartDay = tuple_to_int(t, s_settings.FiscalStartDay);
-        APP_LOG(APP_LOG_LEVEL_INFO, "FiscalStartDay = %d", s_settings.FiscalStartDay);
         changed = true;
         break;
       case KEY_SET_MOON_PHASE:
@@ -321,7 +311,6 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
   
   if (changed) {
       sanitize_settings();
-      APP_LOG(APP_LOG_LEVEL_INFO, "Settings changed, saving...");
       settings_save();
   }
   return changed;

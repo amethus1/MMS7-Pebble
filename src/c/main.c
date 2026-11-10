@@ -13,6 +13,7 @@
 #include "modules/health.h"
 #include "modules/connection.h"
 #include "modules/colors.h"
+#include "modules/rules.h"
 
 #include "ui/layers/background.h"
 #include "ui/layers/time_layer.h"
@@ -211,7 +212,11 @@ static int get_fiscal_week_number(struct tm* t, int start_month, int start_day) 
 }
 
 static void format_week_text(char* buffer, size_t size, struct tm* t, const GlobalSettings* settings) {
-    if (settings->WeekNumberType == 1) {
+    if (settings->WeekNumberType == WEEK_TYPE_FISCAL_RETAIL) {
+        snprintf(buffer, size, "WK%02d", rules_retail_fiscal_week(t->tm_year + 1900, t->tm_yday, t->tm_wday));
+        return;
+    }
+    if (settings->WeekNumberType == WEEK_TYPE_FISCAL_DATE) {
         int month = settings->FiscalStartMonth;
         int day = settings->FiscalStartDay;
         if (month < 0) month = 0;
@@ -431,6 +436,18 @@ static void process_events() {
             status_layer_update(s_status_layer);
         }
     }
+
+    // Some colours follow the data rather than the settings: the stale / failed
+    // header, the temperature, the icon at sunset and sunrise, and the
+    // Bluetooth mark. Refresh them whenever what they depend on may have
+    // changed, not only when the settings do. (Setting a colour a layer
+    // already has costs nothing.)
+    if (flags & (EVENT_TIME_TICK | EVENT_WEATHER_DATA)) {
+        weather_layer_update_colors(s_weather_layer);
+    }
+    if (flags & EVENT_CONNECTION) {
+        status_layer_update_colors(s_status_layer);
+    }
     
     if (flags & EVENT_BATTERY_STATE) {
         background_layer_mark_dirty(s_bg_layer);
@@ -579,8 +596,12 @@ static void init() {
     // Register tap handler for shake-to-show seconds
     accel_tap_service_subscribe(tap_handler);
     
-    // Request weather immediately on startup (like Details watchface)
-    weather_request_update();
+    // Fetch at launch only when the cached weather is due for a refresh. The
+    // face restarts every time the user comes back from a menu or an app, and
+    // each fetch costs the phone a GPS fix and two web requests.
+    if (weather_needs_refresh(settings_get_instance()->WeatherUpdateInterval)) {
+        weather_request_update();
+    }
 }
 
 static void deinit() {

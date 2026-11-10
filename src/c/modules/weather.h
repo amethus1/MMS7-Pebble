@@ -16,6 +16,10 @@ bool weather_check_staleness();
 
 void weather_request_update(void);
 
+// Whether the cached weather is older than the refresh interval (or missing).
+// Used at launch, so reopening the face does not fetch again every time.
+bool weather_needs_refresh(int interval_minutes);
+
 // Helper: Calculate night mode from state
 bool weather_is_night();
 

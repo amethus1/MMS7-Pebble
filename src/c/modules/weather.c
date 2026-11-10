@@ -1,6 +1,7 @@
 #include "weather.h"
 #include "../keys.h"
 #include "../config.h"
+#include "weather_format.h"
 #include "../state/events.h"
 #include "comm.h"
 
@@ -23,10 +24,12 @@ void weather_init() {
     
     // Set defaults with clear "no data" indicators
     state->weather.location_name[0] = '\0';   // Rendered as "No weather" until data arrives
-    state->weather.temp_c = -999;
-    state->weather.temp_f = -999;
-    state->weather.temp_high_c = -999;
-    state->weather.temp_low_c = -999;
+    state->weather.temp_c = WEATHER_TEMP_UNKNOWN;
+    state->weather.temp_high_c = WEATHER_TEMP_UNKNOWN;
+    state->weather.temp_low_c = WEATHER_TEMP_UNKNOWN;
+    state->weather.temp_f = WEATHER_TEMP_UNKNOWN;
+    state->weather.temp_high_f = WEATHER_TEMP_UNKNOWN;
+    state->weather.temp_low_f = WEATHER_TEMP_UNKNOWN;
     state->weather.humidity_percent = 0;
     state->weather.pressure_hpa = 0;
     state->weather.wind_kmh = 0;
@@ -57,6 +60,15 @@ void weather_init() {
     }
     if (persist_exists(KEY_WEATHER_LOW)) {
         state->weather.temp_low_c = persist_read_int(KEY_WEATHER_LOW);
+    }
+    if (persist_exists(KEY_WEATHER_TEMP_F)) {
+        state->weather.temp_f = persist_read_int(KEY_WEATHER_TEMP_F);
+    }
+    if (persist_exists(KEY_WEATHER_HIGH_F)) {
+        state->weather.temp_high_f = persist_read_int(KEY_WEATHER_HIGH_F);
+    }
+    if (persist_exists(KEY_WEATHER_LOW_F)) {
+        state->weather.temp_low_f = persist_read_int(KEY_WEATHER_LOW_F);
     }
     if (persist_exists(KEY_WEATHER_ICON)) {
         state->weather.icon_id = persist_read_int(KEY_WEATHER_ICON);
@@ -113,6 +125,9 @@ void weather_deinit() {
     persist_write_int(KEY_WEATHER_TEMP, state->weather.temp_c);
     persist_write_int(KEY_WEATHER_HIGH, state->weather.temp_high_c);
     persist_write_int(KEY_WEATHER_LOW, state->weather.temp_low_c);
+    persist_write_int(KEY_WEATHER_TEMP_F, state->weather.temp_f);
+    persist_write_int(KEY_WEATHER_HIGH_F, state->weather.temp_high_f);
+    persist_write_int(KEY_WEATHER_LOW_F, state->weather.temp_low_f);
     persist_write_int(KEY_WEATHER_ICON, state->weather.icon_id);
     persist_write_int(KEY_WEATHER_HUMIDITY, state->weather.humidity_percent);
     persist_write_int(KEY_WEATHER_PRESSURE, state->weather.pressure_hpa);
@@ -134,6 +149,10 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
     bool changed = false;
     bool weather_payload_changed = false;
     bool saw_unconfirmed_flag = false;
+    // A Celsius reading that arrives without its Fahrenheit twin must not be
+    // paired with the Fahrenheit value of an earlier reading.
+    bool saw_temp = false, saw_high = false, saw_low = false;
+    bool saw_temp_f = false, saw_high_f = false, saw_low_f = false;
     Tuple *t = dict_read_first(iterator);
 
     while(t != NULL) {
@@ -173,16 +192,37 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
                 break;
             case KEY_WEATHER_TEMP:
                 state->weather.temp_c = t->value->int32;
+                saw_temp = true;
                 changed = true;
                 weather_payload_changed = true;
                 break;
             case KEY_WEATHER_HIGH:
                 state->weather.temp_high_c = t->value->int32;
+                saw_high = true;
                 changed = true;
                 weather_payload_changed = true;
                 break;
             case KEY_WEATHER_LOW:
                 state->weather.temp_low_c = t->value->int32;
+                saw_low = true;
+                changed = true;
+                weather_payload_changed = true;
+                break;
+            case KEY_WEATHER_TEMP_F:
+                state->weather.temp_f = t->value->int32;
+                saw_temp_f = true;
+                changed = true;
+                weather_payload_changed = true;
+                break;
+            case KEY_WEATHER_HIGH_F:
+                state->weather.temp_high_f = t->value->int32;
+                saw_high_f = true;
+                changed = true;
+                weather_payload_changed = true;
+                break;
+            case KEY_WEATHER_LOW_F:
+                state->weather.temp_low_f = t->value->int32;
+                saw_low_f = true;
                 changed = true;
                 weather_payload_changed = true;
                 break;
@@ -251,6 +291,10 @@ bool weather_handle_app_message(DictionaryIterator *iterator) {
         t = dict_read_next(iterator);
     }
     
+    if (saw_temp && !saw_temp_f) state->weather.temp_f = WEATHER_TEMP_UNKNOWN;
+    if (saw_high && !saw_high_f) state->weather.temp_high_f = WEATHER_TEMP_UNKNOWN;
+    if (saw_low && !saw_low_f) state->weather.temp_low_f = WEATHER_TEMP_UNKNOWN;
+
     // If we received weather data, clear staleness and error flags
     if (weather_payload_changed) {
         state->weather.is_stale = false;
@@ -300,9 +344,35 @@ bool weather_is_night() {
     }
     
     time_t now = time(NULL);
-    
+    time_t sunrise = state->weather.sunrise;
+    time_t sunset = state->weather.sunset;
+
+    // The times are for the day of the last fetch. With the phone out of
+    // reach overnight they would otherwise read as "after sunset" all of the
+    // next day, so carry them forward by whole days; the sun's times move by
+    // a minute or two a day, close enough until the next fetch.
+    if (now > sunrise) {
+        time_t days = (now - sunrise) / SECONDS_PER_DAY;
+        sunrise += days * SECONDS_PER_DAY;
+        sunset += days * SECONDS_PER_DAY;
+    }
+
     // Night = before sunrise OR after sunset
-    return (now < state->weather.sunrise || now > state->weather.sunset);
+    return (now < sunrise || now > sunset);
+}
+
+bool weather_needs_refresh(int interval_minutes) {
+    AppState* state = state_get_ptr();
+    time_t last = state->weather.last_update_time;
+    if (last <= 0) {
+        return true;
+    }
+    if (interval_minutes < 1) {
+        interval_minutes = WEATHER_UPDATE_INTERVAL_MINUTE;
+    }
+    time_t age = time(NULL) - last;
+    // A time in the future means the clock was changed; fetch rather than trust it
+    return age < 0 || age >= (time_t)interval_minutes * SECONDS_PER_MINUTE;
 }
 
 bool weather_has_data() {

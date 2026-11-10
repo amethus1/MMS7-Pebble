@@ -35,6 +35,16 @@ const payload = weatherApi.buildWeatherPayload(json, location, keys, 1700001234)
 assert.strictEqual(payload[keys.KEY_WEATHER_TEMP], 12, 'Temp should round');
 assert.strictEqual(payload[keys.KEY_WEATHER_HIGH], 16, 'High should map from daily max');
 assert.strictEqual(payload[keys.KEY_WEATHER_LOW], 7, 'Low should map from daily min');
+// Fahrenheit comes from the unrounded Celsius: 12.3 C is 54.1 F, 16.1 C is
+// 61.0 F and 7.4 C is 45.3 F.
+assert.strictEqual(payload[keys.KEY_WEATHER_TEMP_F], 54, 'Fahrenheit temp should be rounded from the exact reading');
+assert.strictEqual(payload[keys.KEY_WEATHER_HIGH_F], 61, 'Fahrenheit high should be rounded from the exact reading');
+assert.strictEqual(payload[keys.KEY_WEATHER_LOW_F], 45, 'Fahrenheit low should be rounded from the exact reading');
+var exact = weatherApi.buildWeatherPayload(
+  { current: { time: 1700000000, temperature_2m: 15.3, weather_code: 0, is_day: 1 }, daily: {} },
+  { name: 'Test' }, keys, 1700001234);
+assert.strictEqual(exact[keys.KEY_WEATHER_TEMP], 15, '15.3 C rounds to 15 C');
+assert.strictEqual(exact[keys.KEY_WEATHER_TEMP_F], 60, '15.3 C is 60 F, not the 59 F that 15 C converts to');
 assert.strictEqual(payload[keys.KEY_WEATHER_HUMIDITY], 82, 'Humidity should map');
 assert.strictEqual(payload[keys.KEY_WEATHER_PRESSURE], 1032, 'Pressure should map');
 assert.strictEqual(payload[keys.KEY_WEATHER_WIND_KMH], 4, 'Wind should round in km/h');

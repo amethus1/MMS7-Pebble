@@ -178,6 +178,13 @@ function getWeatherDescription(code) {
     return descriptions[code] || 'Unknown';
 }
 
+// Fahrenheit from the unrounded Celsius reading. The watch cannot do this
+// from the whole-degree Celsius it is sent without being off by 1°F about
+// half the time.
+function celsiusToFahrenheit(celsius) {
+    return Math.round(Number(celsius) * 9 / 5 + 32);
+}
+
 function firstOr(value, fallback) {
     return value && value.length ? value[0] : fallback;
 }
@@ -210,8 +217,13 @@ function buildWeatherPayload(json, location, keys, nowUnix) {
     );
     dict[keys.KEY_TIME_UTC_OFFSET] = Number(json.utc_offset_seconds || 0);
 
-    dict[keys.KEY_WEATHER_HIGH] = Math.round(Number(firstOr(daily.temperature_2m_max, current.temperature_2m || 0)));
-    dict[keys.KEY_WEATHER_LOW] = Math.round(Number(firstOr(daily.temperature_2m_min, current.temperature_2m || 0)));
+    var highC = Number(firstOr(daily.temperature_2m_max, current.temperature_2m || 0));
+    var lowC = Number(firstOr(daily.temperature_2m_min, current.temperature_2m || 0));
+    dict[keys.KEY_WEATHER_HIGH] = Math.round(highC);
+    dict[keys.KEY_WEATHER_LOW] = Math.round(lowC);
+    dict[keys.KEY_WEATHER_TEMP_F] = celsiusToFahrenheit(current.temperature_2m || 0);
+    dict[keys.KEY_WEATHER_HIGH_F] = celsiusToFahrenheit(highC);
+    dict[keys.KEY_WEATHER_LOW_F] = celsiusToFahrenheit(lowC);
     dict[keys.KEY_WEATHER_HUMIDITY] = Math.round(Number(current.relative_humidity_2m || 0));
     dict[keys.KEY_WEATHER_PRESSURE] = Math.round(Number(current.surface_pressure || 0));
     dict[keys.KEY_WEATHER_WIND_KMH] = Math.round(Number(current.wind_speed_10m || 0));
@@ -253,8 +265,7 @@ function reverseGeocodeLocation(lat, lon, onSuccess, onError) {
     // Match the working approach from Details: Open-Meteo for forecast, Nominatim for GPS place names.
     var url = 'https://nominatim.openstreetmap.org/reverse?format=json&zoom=10' +
         '&lat=' + encodeURIComponent(lat) +
-        '&lon=' + encodeURIComponent(lon) +
-        '&email=daybreakpebble@example.com';
+        '&lon=' + encodeURIComponent(lon);
 
     httpGetJson(url, function (json) {
         var name = extractReverseGeocodeName(json);

@@ -5,9 +5,13 @@
 // Sub-state structs
 typedef struct {
     int temp_c;
-    int temp_f;
     int temp_high_c;
     int temp_low_c;
+    // Fahrenheit as rounded by the phone, or WEATHER_TEMP_UNKNOWN when only
+    // the Celsius reading is known (weather cached by an older version)
+    int temp_f;
+    int temp_high_f;
+    int temp_low_f;
     int humidity_percent;
     int pressure_hpa;
     int wind_kmh;

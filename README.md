@@ -36,6 +36,7 @@ This project is a modernize and refactored version of the classic MSS watchface.
 
 ### 📅 Fiscal Week Support
 - **Customizable Start:** Define your fiscal year start month and day.
+- **Retail Calendar:** Or follow the retail fiscal calendar (year ends on the Saturday closest to January 31), where the start date moves by itself each year.
 - **Display Options:** Choose between ISO Calendar Week (`CW`) or Fiscal Week (`WK`).
 - **Integration:** Fiscal week number can be appended to the date line or shown in the weather info area.
 
