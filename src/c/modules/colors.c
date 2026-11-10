@@ -2,7 +2,9 @@
 
 // The built-in schemes, then the user's own at COLOR_PROFILE_CUSTOM
 static ColorScheme SCHEMES[COLOR_PROFILE_CUSTOM + 1];
+#if !defined(PBL_BW)
 static bool s_custom_icon_by_weather = true;
+#endif
 
 void colors_init(void) {
   // 0: White on Black (Default)
@@ -249,6 +251,10 @@ void colors_init(void) {
 }
 
 void colors_set_custom(const int *rgb, bool icon_by_weather) {
+#if defined(PBL_BW)
+  // Black-and-white watches only ever use the first two schemes
+  (void)rgb; (void)icon_by_weather;
+#else
   GColor bg = GColorFromHEX(rgb[CUSTOM_COLOR_BACKGROUND]);
   GColor clock = GColorFromHEX(rgb[CUSTOM_COLOR_CLOCK]);
   GColor date = GColorFromHEX(rgb[CUSTOM_COLOR_DATE]);
@@ -280,6 +286,7 @@ void colors_set_custom(const int *rgb, bool icon_by_weather) {
     .battery_fill = battery
   };
   s_custom_icon_by_weather = icon_by_weather;
+#endif
 }
 
 const ColorScheme* colors_get_scheme(int index) {
@@ -299,9 +306,8 @@ void colors_get_weather_icon_colors(int profile_index, int icon_code, bool is_ni
   } else {
      *fg = GColorWhite; *bg = GColorBlack;
   }
-  return;
-#endif
-
+  (void)icon_code;
+#else
   *fg = GColorWhite;
   *bg = GColorBlack;
 
@@ -365,4 +371,5 @@ void colors_get_weather_icon_colors(int profile_index, int icon_code, bool is_ni
       }
     }
   }
+#endif
 }

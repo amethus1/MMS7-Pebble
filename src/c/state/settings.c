@@ -124,6 +124,7 @@ void settings_load() {
   if (persist_exists(KEY_SET_SLEEP_UNTIL_HOUR)) s_settings.SleepUntilHour = persist_read_int(KEY_SET_SLEEP_UNTIL_HOUR);
   if (persist_exists(KEY_SET_EXTRA_INFO_CENTER)) s_settings.ExtraInfoCenter = persist_read_int(KEY_SET_EXTRA_INFO_CENTER);
   if (persist_exists(KEY_SET_HEART_RATE)) s_settings.HeartRate = persist_read_int(KEY_SET_HEART_RATE);
+#if !defined(PBL_BW)   // Custom colours: colour watches only
   if (persist_exists(KEY_SET_CUSTOM_BACKGROUND)) s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND] = persist_read_int(KEY_SET_CUSTOM_BACKGROUND);
   if (persist_exists(KEY_SET_CUSTOM_CLOCK)) s_settings.CustomColors[CUSTOM_COLOR_CLOCK] = persist_read_int(KEY_SET_CUSTOM_CLOCK);
   if (persist_exists(KEY_SET_CUSTOM_DATE)) s_settings.CustomColors[CUSTOM_COLOR_DATE] = persist_read_int(KEY_SET_CUSTOM_DATE);
@@ -137,6 +138,7 @@ void settings_load() {
   if (persist_exists(KEY_SET_CUSTOM_BATTERY)) s_settings.CustomColors[CUSTOM_COLOR_BATTERY] = persist_read_int(KEY_SET_CUSTOM_BATTERY);
   if (persist_exists(KEY_SET_CUSTOM_LINES)) s_settings.CustomColors[CUSTOM_COLOR_LINES] = persist_read_int(KEY_SET_CUSTOM_LINES);
   if (persist_exists(KEY_SET_CUSTOM_ICON_AUTO)) s_settings.CustomIconAuto = persist_read_int(KEY_SET_CUSTOM_ICON_AUTO);
+#endif
   
   if (persist_exists(KEY_DETECT_FIRST_START)) s_settings.AppFirstStart = persist_read_int(KEY_DETECT_FIRST_START);
   else s_settings.AppFirstStart = 1;
@@ -179,6 +181,7 @@ void settings_save() {
   persist_write_int(KEY_SET_SLEEP_UNTIL_HOUR, s_settings.SleepUntilHour);
   persist_write_int(KEY_SET_EXTRA_INFO_CENTER, s_settings.ExtraInfoCenter);
   persist_write_int(KEY_SET_HEART_RATE, s_settings.HeartRate);
+#if !defined(PBL_BW)   // Custom colours: colour watches only
   persist_write_int(KEY_SET_CUSTOM_BACKGROUND, s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND]);
   persist_write_int(KEY_SET_CUSTOM_CLOCK, s_settings.CustomColors[CUSTOM_COLOR_CLOCK]);
   persist_write_int(KEY_SET_CUSTOM_DATE, s_settings.CustomColors[CUSTOM_COLOR_DATE]);
@@ -192,6 +195,7 @@ void settings_save() {
   persist_write_int(KEY_SET_CUSTOM_BATTERY, s_settings.CustomColors[CUSTOM_COLOR_BATTERY]);
   persist_write_int(KEY_SET_CUSTOM_LINES, s_settings.CustomColors[CUSTOM_COLOR_LINES]);
   persist_write_int(KEY_SET_CUSTOM_ICON_AUTO, s_settings.CustomIconAuto);
+#endif
   
   persist_write_int(KEY_DETECT_FIRST_START, s_settings.AppFirstStart);
   persist_write_int(KEY_WARN_LOCATION, s_settings.warning_color_location);
@@ -329,6 +333,7 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         s_settings.HeartRate = tuple_to_int(t, s_settings.HeartRate);
         changed = true;
         break;
+#if !defined(PBL_BW)   // Custom colours: colour watches only
       case KEY_SET_CUSTOM_BACKGROUND:
         s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND]);
         changed = true;
@@ -381,6 +386,7 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         s_settings.CustomIconAuto = tuple_to_int(t, s_settings.CustomIconAuto);
         changed = true;
         break;
+#endif
       case KEY_DETECT_FIRST_START:
         s_settings.AppFirstStart = tuple_to_int(t, s_settings.AppFirstStart);
         break;
