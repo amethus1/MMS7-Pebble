@@ -1,6 +1,7 @@
 #include "settings.h"
 #include "../keys.h"
 #include <stdlib.h>
+#include <string.h>
 
 static GlobalSettings s_settings;
 
@@ -42,6 +43,10 @@ static void sanitize_settings(void) {
     s_settings.SleepUntilHour = clamp_int(s_settings.SleepUntilHour, 0, 23);
     s_settings.ExtraInfoCenter = clamp_int(s_settings.ExtraInfoCenter, 0, 1);
     s_settings.HeartRate = clamp_int(s_settings.HeartRate, 0, 1);
+    for (int i = 0; i < CUSTOM_COLOR_COUNT; i++) {
+        s_settings.CustomColors[i] &= 0xFFFFFF;   // 0xRRGGBB only
+    }
+    s_settings.CustomIconAuto = clamp_int(s_settings.CustomIconAuto, 0, 1);
 }
 
 GlobalSettings* settings_get_instance() {
@@ -82,6 +87,9 @@ void settings_load() {
   s_settings.SleepUntilHour = 10;
   s_settings.ExtraInfoCenter = 0;
   s_settings.HeartRate = 0;
+  static const int custom_defaults[CUSTOM_COLOR_COUNT] = CUSTOM_COLOR_DEFAULTS;
+  memcpy(s_settings.CustomColors, custom_defaults, sizeof(s_settings.CustomColors));
+  s_settings.CustomIconAuto = 1;
   s_settings.warning_color_location = 0;
 
   // Load from storage
@@ -116,6 +124,14 @@ void settings_load() {
   if (persist_exists(KEY_SET_SLEEP_UNTIL_HOUR)) s_settings.SleepUntilHour = persist_read_int(KEY_SET_SLEEP_UNTIL_HOUR);
   if (persist_exists(KEY_SET_EXTRA_INFO_CENTER)) s_settings.ExtraInfoCenter = persist_read_int(KEY_SET_EXTRA_INFO_CENTER);
   if (persist_exists(KEY_SET_HEART_RATE)) s_settings.HeartRate = persist_read_int(KEY_SET_HEART_RATE);
+#if !defined(PBL_BW)   // Custom colours: colour watches only
+  // The twelve colour keys are consecutive, in CustomColor order
+  for (int i = 0; i < CUSTOM_COLOR_COUNT; i++) {
+    uint32_t key = KEY_SET_CUSTOM_BACKGROUND + i;
+    if (persist_exists(key)) s_settings.CustomColors[i] = persist_read_int(key);
+  }
+  if (persist_exists(KEY_SET_CUSTOM_ICON_AUTO)) s_settings.CustomIconAuto = persist_read_int(KEY_SET_CUSTOM_ICON_AUTO);
+#endif
   
   if (persist_exists(KEY_DETECT_FIRST_START)) s_settings.AppFirstStart = persist_read_int(KEY_DETECT_FIRST_START);
   else s_settings.AppFirstStart = 1;
@@ -158,6 +174,12 @@ void settings_save() {
   persist_write_int(KEY_SET_SLEEP_UNTIL_HOUR, s_settings.SleepUntilHour);
   persist_write_int(KEY_SET_EXTRA_INFO_CENTER, s_settings.ExtraInfoCenter);
   persist_write_int(KEY_SET_HEART_RATE, s_settings.HeartRate);
+#if !defined(PBL_BW)   // Custom colours: colour watches only
+  for (int i = 0; i < CUSTOM_COLOR_COUNT; i++) {
+    persist_write_int(KEY_SET_CUSTOM_BACKGROUND + i, s_settings.CustomColors[i]);
+  }
+  persist_write_int(KEY_SET_CUSTOM_ICON_AUTO, s_settings.CustomIconAuto);
+#endif
   
   persist_write_int(KEY_DETECT_FIRST_START, s_settings.AppFirstStart);
   persist_write_int(KEY_WARN_LOCATION, s_settings.warning_color_location);
@@ -295,6 +317,12 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         s_settings.HeartRate = tuple_to_int(t, s_settings.HeartRate);
         changed = true;
         break;
+#if !defined(PBL_BW)   // Custom colours: colour watches only
+      case KEY_SET_CUSTOM_ICON_AUTO:
+        s_settings.CustomIconAuto = tuple_to_int(t, s_settings.CustomIconAuto);
+        changed = true;
+        break;
+#endif
       case KEY_DETECT_FIRST_START:
         s_settings.AppFirstStart = tuple_to_int(t, s_settings.AppFirstStart);
         break;
@@ -303,6 +331,14 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         changed = true;
         break;
       default:
+#if !defined(PBL_BW)
+        // The twelve custom colour keys are consecutive, in CustomColor order
+        if (t->key >= KEY_SET_CUSTOM_BACKGROUND && t->key < KEY_SET_CUSTOM_BACKGROUND + CUSTOM_COLOR_COUNT) {
+          int slot = (int)(t->key - KEY_SET_CUSTOM_BACKGROUND);
+          s_settings.CustomColors[slot] = tuple_to_int(t, s_settings.CustomColors[slot]);
+          changed = true;
+        }
+#endif
         // Ignore weather/timezone keys - they're handled by weather module
         break;
     }

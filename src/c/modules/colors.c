@@ -1,6 +1,10 @@
 #include "colors.h"
 
-static ColorScheme SCHEMES[MAX_COLOR_PROFILES + 1];
+// The built-in schemes, then the user's own at COLOR_PROFILE_CUSTOM
+static ColorScheme SCHEMES[COLOR_PROFILE_CUSTOM + 1];
+#if !defined(PBL_BW)
+static bool s_custom_icon_by_weather = true;
+#endif
 
 void colors_init(void) {
   // 0: White on Black (Default)
@@ -246,12 +250,51 @@ void colors_init(void) {
   };
 }
 
+void colors_set_custom(const int *rgb, bool icon_by_weather) {
+#if defined(PBL_BW)
+  // Black-and-white watches only ever use the first two schemes
+  (void)rgb; (void)icon_by_weather;
+#else
+  GColor bg = GColorFromHEX(rgb[CUSTOM_COLOR_BACKGROUND]);
+  GColor clock = GColorFromHEX(rgb[CUSTOM_COLOR_CLOCK]);
+  GColor date = GColorFromHEX(rgb[CUSTOM_COLOR_DATE]);
+  GColor weather = GColorFromHEX(rgb[CUSTOM_COLOR_WEATHER]);
+  GColor icon = GColorFromHEX(rgb[CUSTOM_COLOR_ICON]);
+  GColor header_text = GColorFromHEX(rgb[CUSTOM_COLOR_HEADER_TEXT]);
+  GColor header_bg = GColorFromHEX(rgb[CUSTOM_COLOR_HEADER_BG]);
+  GColor extra = GColorFromHEX(rgb[CUSTOM_COLOR_EXTRA]);
+  GColor battery = GColorFromHEX(rgb[CUSTOM_COLOR_BATTERY]);
+  GColor lines = GColorFromHEX(rgb[CUSTOM_COLOR_LINES]);
+
+  // The face has one background; only the header strip has its own.
+  SCHEMES[COLOR_PROFILE_CUSTOM] = (ColorScheme){
+    .clock = clock, .seconds = clock, .timezone = extra,
+    .steps = extra, .calendar_week = date, .clock_bg = bg,
+    .date = date, .date_bg = bg,
+    .weather = weather, .weather_bg = bg,
+    .moon = icon, .moon_bg = bg,
+    .sun = GColorFromHEX(rgb[CUSTOM_COLOR_SUN]),
+    .connection = GColorFromHEX(rgb[CUSTOM_COLOR_BLUETOOTH]), .status_bg = bg,
+    .location = header_text, .location_bg = header_bg,
+    .last_update = header_text, .last_update_bg = header_bg,
+    .lines_bg = lines, .lines_minor = lines,
+    // The percentage is drawn in the battery colour, and in the background
+    // colour where the charge bar is behind it. The bar is green / orange /
+    // red by charge; the battery colour is its fallback when that would
+    // vanish into the background.
+    .battery_text = battery, .battery_bg = bg,
+    .battery_fill = battery
+  };
+  s_custom_icon_by_weather = icon_by_weather;
+#endif
+}
+
 const ColorScheme* colors_get_scheme(int index) {
 #if defined(PBL_BW)
   if (index == 1) return &SCHEMES[1]; // Invert (Black on White)
   return &SCHEMES[0]; // Default (White on Black)
 #else
-  if (index < 0 || index > MAX_COLOR_PROFILES) return &SCHEMES[0];
+  if (index < 0 || index > COLOR_PROFILE_CUSTOM) return &SCHEMES[0];
   return &SCHEMES[index];
 #endif
 }
@@ -263,9 +306,8 @@ void colors_get_weather_icon_colors(int profile_index, int icon_code, bool is_ni
   } else {
      *fg = GColorWhite; *bg = GColorBlack;
   }
-  return;
-#endif
-
+  (void)icon_code;
+#else
   *fg = GColorWhite;
   *bg = GColorBlack;
 
@@ -304,13 +346,30 @@ void colors_get_weather_icon_colors(int profile_index, int icon_code, bool is_ni
     {0, 0}, {0, 0}
   };
 
+  // Custom scheme: the user's icon colour, unless they kept the icon
+  // coloured by conditions - and even then, whenever the condition colour
+  // would vanish into their background.
+  const ColorScheme *custom = &SCHEMES[COLOR_PROFILE_CUSTOM];
+  bool is_custom = (profile_index == COLOR_PROFILE_CUSTOM);
+  if (is_custom) {
+    *fg = custom->moon;
+    *bg = custom->clock_bg;
+    if (!s_custom_icon_by_weather) return;
+  }
+
   if (icon_code >= 33 && icon_code <= 106) {
     int idx = icon_code - 33;
     uint32_t fg_hex = ICON_COLORS[idx][0];
     uint32_t bg_hex = ICON_COLORS[idx][1];
     if (fg_hex != 0 || bg_hex != 0) {
-      *fg = GColorFromHEX(fg_hex);
-      *bg = GColorFromHEX(bg_hex);
+      GColor condition = GColorFromHEX(fg_hex);
+      if (is_custom) {
+        if (!gcolor_equal(condition, custom->clock_bg)) *fg = condition;
+      } else {
+        *fg = condition;
+        *bg = GColorFromHEX(bg_hex);
+      }
     }
   }
+#endif
 }

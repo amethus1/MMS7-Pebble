@@ -7,7 +7,47 @@
 #include <stdlib.h>
 
 // Mock Pebble types
-typedef uint32_t GColor;
+// Colours as the Pebble SDK defines them: one byte, two bits each for alpha,
+// red, green and blue. Only the named colours the watchface uses are listed.
+typedef union {
+    uint8_t argb;
+} GColor8;
+typedef GColor8 GColor;
+#define GColorFromHEX(v) ((GColor){ .argb = (uint8_t)(0xC0 | \
+    ((((v) >> 16) & 0xff) >> 6) << 4 | ((((v) >> 8) & 0xff) >> 6) << 2 | (((v) & 0xff) >> 6)) })
+static inline bool gcolor_equal(GColor a, GColor b) { return a.argb == b.argb; }
+#define GColorBlack                  ((GColor){ .argb = 0xC0 })
+#define GColorBlue                   ((GColor){ .argb = 0xC3 })
+#define GColorBrightGreen            ((GColor){ .argb = 0xDC })
+#define GColorBulgarianRose          ((GColor){ .argb = 0xD0 })
+#define GColorCeleste                ((GColor){ .argb = 0xEF })
+#define GColorChromeYellow           ((GColor){ .argb = 0xF8 })
+#define GColorCyan                   ((GColor){ .argb = 0xCF })
+#define GColorDarkCandyAppleRed      ((GColor){ .argb = 0xE0 })
+#define GColorDarkGray               ((GColor){ .argb = 0xD5 })
+#define GColorDarkGreen              ((GColor){ .argb = 0xC4 })
+#define GColorDukeBlue               ((GColor){ .argb = 0xC2 })
+#define GColorElectricBlue           ((GColor){ .argb = 0xDF })
+#define GColorGreen                  ((GColor){ .argb = 0xCC })
+#define GColorImperialPurple         ((GColor){ .argb = 0xD1 })
+#define GColorJazzberryJam           ((GColor){ .argb = 0xE1 })
+#define GColorKellyGreen             ((GColor){ .argb = 0xD8 })
+#define GColorLightGray              ((GColor){ .argb = 0xEA })
+#define GColorMagenta                ((GColor){ .argb = 0xF3 })
+#define GColorMediumSpringGreen      ((GColor){ .argb = 0xCE })
+#define GColorMelon                  ((GColor){ .argb = 0xFA })
+#define GColorOrange                 ((GColor){ .argb = 0xF4 })
+#define GColorOxfordBlue             ((GColor){ .argb = 0xC1 })
+#define GColorPurpureus              ((GColor){ .argb = 0xE6 })
+#define GColorRed                    ((GColor){ .argb = 0xF0 })
+#define GColorRichBrilliantLavender  ((GColor){ .argb = 0xFB })
+#define GColorScreaminGreen          ((GColor){ .argb = 0xDD })
+#define GColorShockingPink           ((GColor){ .argb = 0xF7 })
+#define GColorSunsetOrange           ((GColor){ .argb = 0xF5 })
+#define GColorTiffanyBlue            ((GColor){ .argb = 0xCA })
+#define GColorVividCerulean          ((GColor){ .argb = 0xCB })
+#define GColorWhite                  ((GColor){ .argb = 0xFF })
+#define GColorYellow                 ((GColor){ .argb = 0xFC })
 typedef void* GBitmap;
 typedef void* Layer;
 typedef void* Window;

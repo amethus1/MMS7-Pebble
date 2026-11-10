@@ -1,5 +1,6 @@
 #pragma once
 #include <pebble.h>
+#include "custom_colors.h"
 
 typedef struct {
   GColor clock;
@@ -37,11 +38,18 @@ typedef struct {
   GColor battery_fill;  // Fill bar color (should contrast with battery_text)
 } ColorScheme;
 
-// Maximum number of static profiles defined
+// Maximum number of static profiles defined. The user's own scheme,
+// COLOR_PROFILE_CUSTOM, comes straight after them.
 #define MAX_COLOR_PROFILES 15
 
 // Initialize color schemes (needed because C99 doesn't support complex static initializers for GColor)
 void colors_init(void);
+
+// Build the custom scheme from the user's colours (0xRRGGBB, indexed by
+// CustomColor). Call after colors_init() and whenever the settings change.
+// icon_by_weather keeps the weather icon coloured by conditions, as in the
+// built-in colour schemes; otherwise it takes the icon colour.
+void colors_set_custom(const int *rgb, bool icon_by_weather);
 
 // Get a pointer to the color scheme for the given index
 const ColorScheme* colors_get_scheme(int index);

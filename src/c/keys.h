@@ -79,3 +79,18 @@
 #define KEY_SET_SLEEP_UNTIL_HOUR   206  // Auto health mode shows sleep until this hour
 #define KEY_SET_EXTRA_INFO_CENTER  207  // Emery: timezone / health in the middle of the status row
 #define KEY_SET_HEART_RATE         208  // 1 shows heart rate in the week label's slot
+
+// Custom colour scheme (see modules/custom_colors.h): one 0xRRGGBB value per part
+#define KEY_SET_CUSTOM_BACKGROUND   210
+#define KEY_SET_CUSTOM_CLOCK        211
+#define KEY_SET_CUSTOM_DATE         212
+#define KEY_SET_CUSTOM_WEATHER      213
+#define KEY_SET_CUSTOM_ICON         214
+#define KEY_SET_CUSTOM_HEADER_TEXT  215
+#define KEY_SET_CUSTOM_HEADER_BG    216
+#define KEY_SET_CUSTOM_SUN          217
+#define KEY_SET_CUSTOM_EXTRA        218
+#define KEY_SET_CUSTOM_BLUETOOTH    219
+#define KEY_SET_CUSTOM_BATTERY      220
+#define KEY_SET_CUSTOM_LINES        221
+#define KEY_SET_CUSTOM_ICON_AUTO    222  // 1 colours the weather icon by conditions, 0 uses the icon colour

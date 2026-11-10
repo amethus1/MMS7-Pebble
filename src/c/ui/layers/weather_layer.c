@@ -298,6 +298,10 @@ void weather_layer_update_colors(WeatherLayer* wl) {
     if (settings->ColoredTemperature &&
         state->weather.temp_c > -100 && state->weather.temp_c < 100) {
         temp_color = temperature_color(state->weather.temp_c);
+        // e.g. a yellow reading on a yellow custom background
+        if (gcolor_equal(temp_color, scheme->clock_bg)) {
+            temp_color = scheme->weather;
+        }
     }
     text_layer_set_text_color(wl->temp_layer, temp_color);
 #if defined(LAYOUT_LARGE_DISPLAY)
