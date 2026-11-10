@@ -2,10 +2,16 @@
 #include "../state/events.h"
 
 #if defined(PBL_HEALTH)
+// Only the events this face uses are handled; anything newer firmware adds
+// (HRV readings, metric alerts) falls through untouched.
 static void health_handler(HealthEventType event, void *context) {
     if (event == HealthEventMovementUpdate || event == HealthEventSignificantUpdate ||
         event == HealthEventSleepUpdate) {
         health_update();
+    } else if (event == HealthEventHeartRateUpdate) {
+        // Can arrive every few seconds during a workout, so only the cheap
+        // heart rate read runs here, not the sleep-session walk.
+        health_update_heart_rate();
     }
 }
 #endif
@@ -102,6 +108,28 @@ void health_update() {
     } else {
         state->health.sleep_seconds = -1;
         state->health.sleep_trend = 0;
+    }
+
+    health_update_heart_rate();
+    #endif
+}
+
+void health_update_heart_rate() {
+    #if defined(PBL_HEALTH)
+    AppState* state = state_get_ptr();
+    time_t now = time(NULL);
+    // Not available on watches without a sensor, or with heart rate turned
+    // off in Pebble Health; the face then keeps the week label in that slot.
+    HealthServiceAccessibilityMask mask = health_service_metric_accessible(HealthMetricHeartRateBPM, now, now);
+    bool available = (mask & HealthServiceAccessibilityMaskAvailable) != 0;
+    // The filtered value is at most 15 minutes old; after that the watch
+    // reports 0 (taken off, or no reading yet), which is shown as "--".
+    int bpm = available ? (int)health_service_peek_current_value(HealthMetricHeartRateBPM) : 0;
+    if (bpm < 0) bpm = 0;
+    if (available != state->health.heart_rate_available || bpm != state->health.heart_rate_bpm) {
+        state->health.heart_rate_available = available;
+        state->health.heart_rate_bpm = bpm;
+        events_set_flag(EVENT_HEALTH_UPDATE);
     }
     #endif
 }

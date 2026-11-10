@@ -53,6 +53,14 @@ cc -std=c99 -Wall -Wextra -Werror \
   -o /tmp/test_settings
 /tmp/test_settings
 
+cc -std=c99 -Wall -Wextra -Werror \
+  -I tests -I src/c \
+  tests/test_mooncalc.c \
+  tests/mock_pebble.c \
+  src/c/mooncalc.c \
+  -o /tmp/test_mooncalc
+/tmp/test_mooncalc
+
 echo "== Pebble build =="
 build_log="$(mktemp)"
 pebble clean >/dev/null 2>&1

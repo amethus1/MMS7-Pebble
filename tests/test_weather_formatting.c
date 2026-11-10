@@ -45,14 +45,23 @@ int main(void) {
     weather_format_pressure(buffer, sizeof(buffer), 1013, 2);
     assert_equals("pressure inhg", buffer, "29.91 inHg");
 
-    weather_format_hi_lo(buffer, sizeof(buffer), 20, 10, false);
+    weather_format_hi_lo(buffer, sizeof(buffer), 20, 10, 69, 49, false);
     assert_equals("hilo celsius", buffer, "20\xc2\xb0/10\xc2\xb0");
 
-    weather_format_hi_lo(buffer, sizeof(buffer), 20, 10, true);
-    assert_equals("hilo fahrenheit", buffer, "68\xc2\xb0/50\xc2\xb0");
+    // 20.4 C is 68.7 F: the phone's 69 is right, converting the rounded 20 gives 68
+    weather_format_hi_lo(buffer, sizeof(buffer), 20, 10, 69, 49, true);
+    assert_equals("hilo fahrenheit from the phone", buffer, "69\xc2\xb0/49\xc2\xb0");
 
-    weather_format_hi_lo(buffer, sizeof(buffer), -999, 10, false);
+    weather_format_hi_lo(buffer, sizeof(buffer), 20, 10, WEATHER_TEMP_UNKNOWN, WEATHER_TEMP_UNKNOWN, true);
+    assert_equals("hilo fahrenheit converted when the phone sent none", buffer, "68\xc2\xb0/50\xc2\xb0");
+
+    weather_format_hi_lo(buffer, sizeof(buffer), -999, 10, WEATHER_TEMP_UNKNOWN, 50, false);
     assert_equals("hilo sentinel", buffer, "--/--");
+
+    assert_int_equals("display celsius", weather_display_temp(20, 69, false), 20);
+    assert_int_equals("display fahrenheit from the phone", weather_display_temp(20, 69, true), 69);
+    assert_int_equals("display fahrenheit converted", weather_display_temp(20, WEATHER_TEMP_UNKNOWN, true), 68);
+    assert_int_equals("display 0 F is a reading, not a sentinel", weather_display_temp(-18, 0, true), 0);
 
     assert_int_equals("c_to_f 0", c_to_f_rounded(0), 32);
     assert_int_equals("c_to_f 20", c_to_f_rounded(20), 68);

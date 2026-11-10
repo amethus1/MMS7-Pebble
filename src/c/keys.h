@@ -16,6 +16,12 @@
 #define KEY_WEATHER_PRESSURE  115 // Pressure in hPa
 #define KEY_WEATHER_WIND_KMH  116 // Wind speed in km/h
 #define KEY_WEATHER_CONDITIONS 117 // Raw weather conditions text
+// Fahrenheit readings rounded on the phone from the unrounded Celsius value.
+// Converting the whole-degree Celsius keys on the watch is off by 1°F about
+// half the time, and can never produce every other Fahrenheit value.
+#define KEY_WEATHER_TEMP_F    118
+#define KEY_WEATHER_HIGH_F    119
+#define KEY_WEATHER_LOW_F     120
 #define KEY_BTY_LAST_CHARGED   13 //BTY = BATTERY
 #define KEY_BTY_LAST_PERCENT   14
 #define KEY_BTY_PERCENT_EXIT   15
@@ -72,3 +78,4 @@
 #define KEY_SET_LEADING_ZERO       205  // 0 shows 8:30 instead of 08:30
 #define KEY_SET_SLEEP_UNTIL_HOUR   206  // Auto health mode shows sleep until this hour
 #define KEY_SET_EXTRA_INFO_CENTER  207  // Emery: timezone / health in the middle of the status row
+#define KEY_SET_HEART_RATE         208  // 1 shows heart rate in the week label's slot

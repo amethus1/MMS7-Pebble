@@ -1,0 +1,49 @@
+name: CI
+
+# Runs the unit tests and builds the watchface with the real Pebble SDK for
+# every platform in package.json. The built .pbw is kept as a download on the
+# run's page.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Unit tests
+        run: |
+          npm run test:js
+          npm run test:c
+
+      - name: Install the Pebble SDK
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          uv tool install pebble-tool
+          pebble sdk install latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: |
+          pebble build 2>&1 | tee build.log
+          # Free heap per platform, smallest first: the number to watch on Pebble 2
+          grep -E 'Free RAM available \(heap\)' build.log | sort -t: -k2 -n || true
+
+      - name: Upload the .pbw
+        uses: actions/upload-artifact@v4
+        with:
+          name: mss7-pbw
+          path: build/*.pbw
+          if-no-files-found: error

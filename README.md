@@ -36,12 +36,15 @@ This project is a modernize and refactored version of the classic MSS watchface.
 
 ### 📅 Fiscal Week Support
 - **Customizable Start:** Define your fiscal year start month and day.
+- **Retail Calendar:** Or follow the retail fiscal calendar (year ends on the Saturday closest to January 31), where the start date moves by itself each year.
 - **Display Options:** Choose between ISO Calendar Week (`CW`) or Fiscal Week (`WK`).
 - **Integration:** Fiscal week number can be appended to the date line or shown in the weather info area.
 
 ### 🎨 Customization
 - **Visibility Toggles:** Option to hide the Calendar Week and Bluetooth connection label for a cleaner look.
 - **Health Info:** Toggle between showing Timezone name, Steps, Sleep, or Auto-switch (Steps day / Sleep night) in the bottom-left corner.
+- **Heart Rate:** On watches with a heart rate sensor, the week label's slot under the clock can show your latest heart rate instead (the week can move into the date line).
+- **Timeline Peek:** When a peek slides up from the bottom, the face moves up just enough to keep the clock visible.
 - **Timezone:** Flexible display formats (UTC, TZ Name, AM/PM + TZ).
 - **Unit Support:** Speed (km/h, mph, m/s) and Pressure (hPa, mmHg, inHg).
 

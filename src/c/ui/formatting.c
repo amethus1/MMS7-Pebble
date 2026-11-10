@@ -1,31 +1,4 @@
 #include "formatting.h"
-#include "../modules/weather_format.h"
-
-void format_temperature(char* buffer, size_t buf_size, int temp_c, bool is_metric) {
-    if (is_metric) {
-        snprintf(buffer, buf_size, "%d°", temp_c);
-    } else {
-        snprintf(buffer, buf_size, "%d°", c_to_f_rounded(temp_c));
-    }
-}
-
-void format_condition_text(char* buffer, size_t buf_size, const char* raw_desc) {
-    // Pass-through for now, or map lookup later
-    snprintf(buffer, buf_size, "%s", raw_desc);
-}
-
-void format_battery_status(char* buffer, size_t buf_size, BatteryState* component) {
-    if (component->is_charging) {
-        snprintf(buffer, buf_size, "CHG");
-    } else {
-        snprintf(buffer, buf_size, "%d%%", component->charge_percent);
-    }
-}
-
-void format_health_string(char* buffer, size_t buf_size, HealthState* component) {
-    // Example: "5000"
-    snprintf(buffer, buf_size, "%d", component->steps);
-}
 
 void format_time_elapsed(char* buffer, size_t buf_size, time_t seconds) {
     int days = seconds / (24 * 3600);

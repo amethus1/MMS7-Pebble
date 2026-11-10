@@ -8,7 +8,14 @@
 #define WEATHER_ERROR_NO_LOCATION    2   // GPS unavailable and no city configured
 #define WEATHER_ERROR_CITY_NOT_FOUND 3   // The configured city did not geocode
 
+// "No reading" for any temperature field
+#define WEATHER_TEMP_UNKNOWN (-999)
+
 int c_to_f_rounded(int temp_c);
+
+// The temperature to show: Celsius as is; Fahrenheit from the phone's own
+// rounding when there is one, otherwise converted from the Celsius reading.
+int weather_display_temp(int temp_c, int temp_f, bool degree_f);
 
 // Location line: "~Name" while the position is unconfirmed, or a short
 // instruction when there is no usable location at all.
@@ -19,4 +26,6 @@ void weather_format_age(char *buffer, size_t size, const char *elapsed, bool fet
 
 void weather_format_wind(char *buffer, size_t size, int wind_kmh, int speed_unit);
 void weather_format_pressure(char *buffer, size_t size, int pressure_hpa, int pressure_unit);
-void weather_format_hi_lo(char *buffer, size_t size, int high_c, int low_c, bool degree_f);
+// high_f / low_f are the phone's Fahrenheit readings, or WEATHER_TEMP_UNKNOWN
+void weather_format_hi_lo(char *buffer, size_t size, int high_c, int low_c,
+                          int high_f, int low_f, bool degree_f);

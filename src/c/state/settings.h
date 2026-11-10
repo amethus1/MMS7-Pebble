@@ -47,6 +47,7 @@ typedef struct {
   int LeadingZero;       // 0 drops the leading zero of single-digit hours
   int SleepUntilHour;    // Auto health mode: sleep until this hour, steps after
   int ExtraInfoCenter;   // Emery: timezone / health centred in the status row, week on the left
+  int HeartRate;         // 1 shows heart rate in the week label's slot (the week can still go in the date line)
   
   // State
   int AppFirstStart;

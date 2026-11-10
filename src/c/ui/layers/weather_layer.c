@@ -99,7 +99,8 @@ static void format_weather_info_line(char *buffer, size_t size, int label_index,
             weather_format_pressure(buffer, size, state->weather.pressure_hpa, settings->PressureUnit);
             break;
         case 5:
-            weather_format_hi_lo(buffer, size, state->weather.temp_high_c, state->weather.temp_low_c, settings->degree_f);
+            weather_format_hi_lo(buffer, size, state->weather.temp_high_c, state->weather.temp_low_c,
+                                 state->weather.temp_high_f, state->weather.temp_low_f, settings->degree_f);
             break;
         default:
             buffer[0] = '\0';
@@ -194,14 +195,12 @@ void weather_layer_update_data(WeatherLayer* wl) {
     
     // Temperature - mask sentinel values
     if (state->weather.temp_c > -100 && state->weather.temp_c < 100) {
+        int display_temp = weather_display_temp(state->weather.temp_c, state->weather.temp_f, settings->degree_f);
 #if defined(LAYOUT_LARGE_DISPLAY)
-        int display_temp = settings->degree_f
-            ? c_to_f_rounded(state->weather.temp_c)
-            : state->weather.temp_c;
         snprintf(wl->temp_buffer, sizeof(wl->temp_buffer), "%d", display_temp);
         text_layer_set_text(wl->temp_degree_layer, "°");
 #else
-        format_temperature(wl->temp_buffer, sizeof(wl->temp_buffer), state->weather.temp_c, !settings->degree_f);
+        snprintf(wl->temp_buffer, sizeof(wl->temp_buffer), "%d°", display_temp);
 #endif
     } else {
         snprintf(wl->temp_buffer, sizeof(wl->temp_buffer), "--");

@@ -26,6 +26,8 @@ void state_init() {
     s_app_state.health.steps_trend = 0;
     s_app_state.health.sleep_trend = 0;
     s_app_state.health.trend_display = 0;
+    s_app_state.health.heart_rate_bpm = 0;
+    s_app_state.health.heart_rate_available = false;
 }
 
 AppState* state_get_ptr() {

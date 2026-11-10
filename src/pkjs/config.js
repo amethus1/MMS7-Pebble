@@ -55,7 +55,8 @@ var ABOUT_HTML =
     '<p><b>Weather age.</b> The number in the top-right corner is how long ago the weather was fetched. A <b>!</b> in front of it means the last fetch failed and you are seeing older data; the header also turns yellow when the data is over two hours old and red after a failed fetch.</p>' +
     '<p><b>~ before the city.</b> The phone could not get a GPS fix, so the weather is fresh but for the place the phone was last seen. If you have typed a city under Weather, it is used when there is no remembered position either.</p>' +
     '<p><b>Steps and the arrow.</b> With steps selected under Extra information, the arrow next to the count compares today with your recent daily average: up means ahead, down means behind.</p>' +
-    '<p><b>Week number.</b> CW is the ISO calendar week. Fiscal week (WK) counts weeks from a start date you choose - useful if your work year does not start in January.</p>' +
+    '<p><b>Heart rate.</b> The watch\'s latest reading, updated as often as Pebble Health measures it. -- means there has been no reading in the last 15 minutes, for example while the watch is off your wrist.</p>' +
+    '<p><b>Week number.</b> CW is the ISO calendar week. Fiscal week (WK) counts weeks from a start date you choose - useful if your work year does not start in January. Retail fiscal week follows the retail calendar, where the year ends on the Saturday closest to January 31: weeks run Sunday to Saturday and the start date moves by itself each year.</p>' +
     '<p><b>Seconds.</b> Showing seconds all the time costs battery. "On shake" shows them for a few seconds when you flick your wrist.</p>' +
     '<p><b>Moon.</b> At night the weather icon can be replaced by the current moon phase. "Unless it is raining or snowing" keeps the weather icon on wet nights, when it is the more useful of the two.</p>' +
     '<p><b>Sleep in the morning, then steps.</b> Shows last night\'s sleep until the time you pick, then steps for the rest of the day.</p>' +
@@ -237,7 +238,8 @@ module.exports = [
                 "defaultValue": 0,
                 "options": [
                     { "label": "Calendar week (ISO 8601)", "value": 0 },
-                    { "label": "Fiscal week, from a date you choose", "value": 1 }
+                    { "label": "Fiscal week, from a date you choose", "value": 1 },
+                    { "label": "Retail fiscal week (Sunday nearest Feb 1)", "value": 2 }
                 ]
             },
             {
@@ -476,6 +478,14 @@ module.exports = [
                     { "label": "Name (CST)", "value": 1 },
                     { "label": "AM/PM and name (PM, CST)", "value": 2 }
                 ]
+            },
+            {
+                "type": "toggle",
+                "messageKey": "KEY_SET_HEART_RATE",
+                "capabilities": ["HEALTH"],
+                "label": "Heart rate in place of the week label",
+                "defaultValue": false,
+                "description": "Needs a watch with a heart rate sensor, with heart rate turned on in Pebble Health; otherwise the week label stays. To keep the week as well, set Week number to \"In the date line\"."
             }
         ]
     },
