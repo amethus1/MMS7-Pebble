@@ -125,18 +125,11 @@ void settings_load() {
   if (persist_exists(KEY_SET_EXTRA_INFO_CENTER)) s_settings.ExtraInfoCenter = persist_read_int(KEY_SET_EXTRA_INFO_CENTER);
   if (persist_exists(KEY_SET_HEART_RATE)) s_settings.HeartRate = persist_read_int(KEY_SET_HEART_RATE);
 #if !defined(PBL_BW)   // Custom colours: colour watches only
-  if (persist_exists(KEY_SET_CUSTOM_BACKGROUND)) s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND] = persist_read_int(KEY_SET_CUSTOM_BACKGROUND);
-  if (persist_exists(KEY_SET_CUSTOM_CLOCK)) s_settings.CustomColors[CUSTOM_COLOR_CLOCK] = persist_read_int(KEY_SET_CUSTOM_CLOCK);
-  if (persist_exists(KEY_SET_CUSTOM_DATE)) s_settings.CustomColors[CUSTOM_COLOR_DATE] = persist_read_int(KEY_SET_CUSTOM_DATE);
-  if (persist_exists(KEY_SET_CUSTOM_WEATHER)) s_settings.CustomColors[CUSTOM_COLOR_WEATHER] = persist_read_int(KEY_SET_CUSTOM_WEATHER);
-  if (persist_exists(KEY_SET_CUSTOM_ICON)) s_settings.CustomColors[CUSTOM_COLOR_ICON] = persist_read_int(KEY_SET_CUSTOM_ICON);
-  if (persist_exists(KEY_SET_CUSTOM_HEADER_TEXT)) s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT] = persist_read_int(KEY_SET_CUSTOM_HEADER_TEXT);
-  if (persist_exists(KEY_SET_CUSTOM_HEADER_BG)) s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG] = persist_read_int(KEY_SET_CUSTOM_HEADER_BG);
-  if (persist_exists(KEY_SET_CUSTOM_SUN)) s_settings.CustomColors[CUSTOM_COLOR_SUN] = persist_read_int(KEY_SET_CUSTOM_SUN);
-  if (persist_exists(KEY_SET_CUSTOM_EXTRA)) s_settings.CustomColors[CUSTOM_COLOR_EXTRA] = persist_read_int(KEY_SET_CUSTOM_EXTRA);
-  if (persist_exists(KEY_SET_CUSTOM_BLUETOOTH)) s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH] = persist_read_int(KEY_SET_CUSTOM_BLUETOOTH);
-  if (persist_exists(KEY_SET_CUSTOM_BATTERY)) s_settings.CustomColors[CUSTOM_COLOR_BATTERY] = persist_read_int(KEY_SET_CUSTOM_BATTERY);
-  if (persist_exists(KEY_SET_CUSTOM_LINES)) s_settings.CustomColors[CUSTOM_COLOR_LINES] = persist_read_int(KEY_SET_CUSTOM_LINES);
+  // The twelve colour keys are consecutive, in CustomColor order
+  for (int i = 0; i < CUSTOM_COLOR_COUNT; i++) {
+    uint32_t key = KEY_SET_CUSTOM_BACKGROUND + i;
+    if (persist_exists(key)) s_settings.CustomColors[i] = persist_read_int(key);
+  }
   if (persist_exists(KEY_SET_CUSTOM_ICON_AUTO)) s_settings.CustomIconAuto = persist_read_int(KEY_SET_CUSTOM_ICON_AUTO);
 #endif
   
@@ -182,18 +175,9 @@ void settings_save() {
   persist_write_int(KEY_SET_EXTRA_INFO_CENTER, s_settings.ExtraInfoCenter);
   persist_write_int(KEY_SET_HEART_RATE, s_settings.HeartRate);
 #if !defined(PBL_BW)   // Custom colours: colour watches only
-  persist_write_int(KEY_SET_CUSTOM_BACKGROUND, s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND]);
-  persist_write_int(KEY_SET_CUSTOM_CLOCK, s_settings.CustomColors[CUSTOM_COLOR_CLOCK]);
-  persist_write_int(KEY_SET_CUSTOM_DATE, s_settings.CustomColors[CUSTOM_COLOR_DATE]);
-  persist_write_int(KEY_SET_CUSTOM_WEATHER, s_settings.CustomColors[CUSTOM_COLOR_WEATHER]);
-  persist_write_int(KEY_SET_CUSTOM_ICON, s_settings.CustomColors[CUSTOM_COLOR_ICON]);
-  persist_write_int(KEY_SET_CUSTOM_HEADER_TEXT, s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT]);
-  persist_write_int(KEY_SET_CUSTOM_HEADER_BG, s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG]);
-  persist_write_int(KEY_SET_CUSTOM_SUN, s_settings.CustomColors[CUSTOM_COLOR_SUN]);
-  persist_write_int(KEY_SET_CUSTOM_EXTRA, s_settings.CustomColors[CUSTOM_COLOR_EXTRA]);
-  persist_write_int(KEY_SET_CUSTOM_BLUETOOTH, s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH]);
-  persist_write_int(KEY_SET_CUSTOM_BATTERY, s_settings.CustomColors[CUSTOM_COLOR_BATTERY]);
-  persist_write_int(KEY_SET_CUSTOM_LINES, s_settings.CustomColors[CUSTOM_COLOR_LINES]);
+  for (int i = 0; i < CUSTOM_COLOR_COUNT; i++) {
+    persist_write_int(KEY_SET_CUSTOM_BACKGROUND + i, s_settings.CustomColors[i]);
+  }
   persist_write_int(KEY_SET_CUSTOM_ICON_AUTO, s_settings.CustomIconAuto);
 #endif
   
@@ -334,54 +318,6 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         changed = true;
         break;
 #if !defined(PBL_BW)   // Custom colours: colour watches only
-      case KEY_SET_CUSTOM_BACKGROUND:
-        s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BACKGROUND]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_CLOCK:
-        s_settings.CustomColors[CUSTOM_COLOR_CLOCK] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_CLOCK]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_DATE:
-        s_settings.CustomColors[CUSTOM_COLOR_DATE] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_DATE]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_WEATHER:
-        s_settings.CustomColors[CUSTOM_COLOR_WEATHER] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_WEATHER]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_ICON:
-        s_settings.CustomColors[CUSTOM_COLOR_ICON] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_ICON]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_HEADER_TEXT:
-        s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_HEADER_TEXT]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_HEADER_BG:
-        s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_HEADER_BG]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_SUN:
-        s_settings.CustomColors[CUSTOM_COLOR_SUN] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_SUN]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_EXTRA:
-        s_settings.CustomColors[CUSTOM_COLOR_EXTRA] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_EXTRA]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_BLUETOOTH:
-        s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BLUETOOTH]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_BATTERY:
-        s_settings.CustomColors[CUSTOM_COLOR_BATTERY] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_BATTERY]);
-        changed = true;
-        break;
-      case KEY_SET_CUSTOM_LINES:
-        s_settings.CustomColors[CUSTOM_COLOR_LINES] = tuple_to_int(t, s_settings.CustomColors[CUSTOM_COLOR_LINES]);
-        changed = true;
-        break;
       case KEY_SET_CUSTOM_ICON_AUTO:
         s_settings.CustomIconAuto = tuple_to_int(t, s_settings.CustomIconAuto);
         changed = true;
@@ -395,6 +331,14 @@ bool settings_handle_app_message(DictionaryIterator *iterator) {
         changed = true;
         break;
       default:
+#if !defined(PBL_BW)
+        // The twelve custom colour keys are consecutive, in CustomColor order
+        if (t->key >= KEY_SET_CUSTOM_BACKGROUND && t->key < KEY_SET_CUSTOM_BACKGROUND + CUSTOM_COLOR_COUNT) {
+          int slot = (int)(t->key - KEY_SET_CUSTOM_BACKGROUND);
+          s_settings.CustomColors[slot] = tuple_to_int(t, s_settings.CustomColors[slot]);
+          changed = true;
+        }
+#endif
         // Ignore weather/timezone keys - they're handled by weather module
         break;
     }

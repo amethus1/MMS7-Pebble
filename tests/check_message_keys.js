@@ -23,6 +23,11 @@ const aliasToCKey = {
 
 const failures = [];
 
+// KEY_SET_CUSTOM_<part>, one per colour picker; not the icon toggle
+function isCustomColourKey(name) {
+  return /^KEY_SET_CUSTOM_/.test(name) && name !== 'KEY_SET_CUSTOM_ICON_AUTO';
+}
+
 Object.keys(pkgKeys).forEach((pkgKey) => {
   const cKeyName = aliasToCKey[pkgKey] || pkgKey;
   if (!cKeyName.startsWith('KEY_')) {
@@ -97,7 +102,8 @@ if (pickers.length !== enumNames.length || headerDefaults.length !== enumNames.l
     if (String(pickers[i].defaultValue).toUpperCase() !== headerDefaults[i]) {
       failures.push(`custom colour ${name}: page default ${pickers[i].defaultValue}, watch default ${headerDefaults[i]}`);
     }
-    if (pkgKeys[pickers[i].messageKey] !== pkgKeys.KEY_SET_CUSTOM_BACKGROUND + i) {
+    if (pkgKeys[pickers[i].messageKey] !== pkgKeys.KEY_SET_CUSTOM_BACKGROUND + i ||
+        cKeys[`KEY_SET_CUSTOM_${name}`] !== cKeys.KEY_SET_CUSTOM_BACKGROUND + i) {
       failures.push(`custom colour ${name}: message keys must be consecutive from KEY_SET_CUSTOM_BACKGROUND`);
     }
   });
@@ -131,6 +137,16 @@ Object.keys(pkgKeys).forEach((pkgKey) => {
   const cKeyName = aliasToCKey[pkgKey] || pkgKey;
   const isSetting = cKeyName.startsWith('KEY_SET_') || cKeyName.startsWith('KEY_HIDE_');
   if (!isSetting) return;
+  // The custom colour keys are handled as one consecutive range rather than a
+  // case each. The checks further down pin their order and numbering, and
+  // test_settings.c sends, stores and reloads every one of them.
+  if (isCustomColourKey(cKeyName)) {
+    if (!/t->key >= KEY_SET_CUSTOM_BACKGROUND && t->key < KEY_SET_CUSTOM_BACKGROUND \+ CUSTOM_COLOR_COUNT/.test(settingsC) ||
+        !/persist_write_int\(KEY_SET_CUSTOM_BACKGROUND \+ i,/.test(settingsC)) {
+      failures.push(`settings.c no longer handles the custom colour key range (${cKeyName})`);
+    }
+    return;
+  }
   if (!new RegExp(`case\\s+${cKeyName}\\s*:`).test(settingsC)) {
     failures.push(`settings.c has no 'case ${cKeyName}:' - the watch would ignore this setting`);
   }
